@@ -1,0 +1,24 @@
+<div class="col-md-12">
+  <h1>Contact</h1>
+  <form role="form" class="form-horizontal">
+    <div class="form-group">
+      <label for="email" class="col-sm-2 control-label">Your emailaddress</label>
+      <div class="col-sm-10">
+        <input ng-model="contact.email" type="text" class="form-control" id="email" placeholder="Your emailaddress">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="subject" class="col-sm-2 control-label">Subject</label>
+      <div class="col-sm-10">
+        <input ng-model="contact.subject" type="text" class="form-control" id="subject" placeholder="Subject">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="content" class="col-sm-2 control-label">Content</label>
+      <div class="col-sm-10">
+        <textarea ng-model="contact.content" class="form-control" rows="4" placeholder="Content"></textarea>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary" ng-click="send()">Send</button>
+  </form>
+</div>

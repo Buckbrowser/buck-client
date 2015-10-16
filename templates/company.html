@@ -1,0 +1,130 @@
+<div class="col-md-12">
+	<h1>Company</h1>
+	<alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)" dismiss-on-timeout="3000">{{alert.msg}}</alert>
+	<tabset>
+		<tab heading="{{company.name}}">
+	  		<table class="table">
+	  			<tr>
+	  				<td>Name</td>
+	  				<td>{{company.name}}</td>
+	  			</tr>
+	  			<tr>
+	  				<td>Address</td>
+	  				<td>{{company.street_name | nullDisplay}} {{company.house_number | nullDisplay}}</td>
+	  			</tr>
+	  			<tr>
+	  				<td>Zipcode</td>
+	  				<td>{{company.zipcode | nullDisplay}}</td>
+	  			</tr>
+	  			<tr>
+	  				<td>City</td>
+	  				<td>{{company.place_name | nullDisplay}}</td>
+	  			</tr>
+	  			<tr>
+	  				<td>Country</td>
+	  				<td>{{company.country.name | nullDisplay}}</td>
+	  			</tr>
+	  			<tr>
+	  				<td>Email</td>
+	  				<td>{{company.email}}</td>
+	  			</tr>
+	  			<tr>
+	  				<td>Tax number</td>
+	  				<td>{{company.tax_number | nullDisplay}}</td>
+	  			</tr>
+	  			<tr>
+	  				<td>Company registration number</td>
+	  				<td>{{company.company_registration_number | nullDisplay}}</td>
+	  			</tr>
+	  			<tr>
+	  				<td>Default invoice number prefix</td>
+	  				<td>{{company.default_invoice_number_prefix | nullDisplay}}</td>
+	  			</tr>
+	  			<tr>
+	  				<td>Default payment term</td>
+	  				<td>{{company.default_payment_term | nullDisplay}} days</td>
+	  			</tr>
+	  		</table>
+		</tab>
+
+		<tab heading="Update {{company.name}}">
+			<form role="form" class="form-horizontal" name="update">
+		      <div class="form-group" ng-class="{'has-error': update.name.$error.required}">
+		        <label for="name" class="col-sm-2 control-label">Name</label>
+		        <div class="col-sm-10">
+		        	<input ng-model="companyUpdate.name" type="text" class="form-control" name="name" id="name" placeholder="Name">
+		        </div>
+		      </div>
+		      <div class="form-group">
+		        <label for="street_name" class="col-sm-2 control-label">Address</label>
+		        <div class="col-sm-10">
+		          <div class="form-group row">
+		            <div class="col-sm-6">
+		              <input ng-model="companyUpdate.street_name" type="text" class="form-control" id="street_name" name="street_name" placeholder="Streetname">
+		            </div>
+		            <div class="col-sm-6">
+		              <input ng-model="companyUpdate.house_number" type="text" class="form-control" id="house_number" name="house_number" placeholder="House number">
+		            </div>
+		          </div>
+		        </div>
+		      </div>
+		      <div class="form-group">
+		      	<label for="zipcode" class="col-sm-2 control-label">Zipcode</label>
+		      	<div class="col-sm-10">
+	              <input ng-model="companyUpdate.zipcode" type="text" class="form-control" id="zipcode" name="zipcode" placeholder="Zipcode">
+		      	</div>
+		      </div>
+		      <div class="form-group">
+		      	<label for="place_name" class="col-sm-2 control-label">City</label>
+		      	<div class="col-sm-10">
+	              <input ng-model="companyUpdate.place_name" type="text" class="form-control" id="place_name" name="place_name" placeholder="City">
+		      	</div>
+		      </div>
+		      <div class="form-group">
+		        <label for="country" class="col-sm-2 control-label">Country</label>
+		        <div class="col-sm-10">
+		          <select class="form-control" id="country" ng-model="companyUpdate.id_country">
+		            <option ng-repeat="country in countries" value="{{country.id}}">{{country.name}} ({{country.locale}})</option>
+		          </select>
+		        </div>
+		      </div>
+		      <div class="form-group" ng-class="{'has-error': update.email.$invalid}">
+		        <label for="email" class="col-sm-2 control-label">Email address</label>
+		        <div class="col-sm-10">
+		          <input ng-model="companyUpdate.email" type="email" class="form-control" id="email" name="email" placeholder="Email address" required overwrite-email>
+		          <p class="help-block" ng-show="update.email.$error.required && update.email.$dirty">This field is required.</p>
+	         	  <p class="help-block" ng-show="update.email.$error.email && update.email.$dirty">This field has to be a correct email address.</p>
+		        </div>
+		      </div>
+		      <div class="form-group">
+		      	<label for="tax_number" class="col-sm-2 control-label">Tax number</label>
+		      	<div class="col-sm-10">
+	              <input ng-model="companyUpdate.tax_number" type="text" class="form-control" id="tax_number" name="tax_number" placeholder="Tax number">
+		      	</div>
+		      </div>
+		      <div class="form-group">
+		      	<label for="company_registration_number" class="col-sm-2 control-label">Company registration number</label>
+		      	<div class="col-sm-10">
+	              <input ng-model="companyUpdate.company_registration_number" type="text" class="form-control" id="company_registration_number" name="company_registration_number" placeholder="Company registration number">
+		      	</div>
+		      </div>
+		      <div class="form-group">
+		      	<label for="default_invoice_number_prefix" class="col-sm-2 control-label">Default invoice number prefix</label>
+		      	<div class="col-sm-10">
+	              <input ng-model="companyUpdate.default_invoice_number_prefix" type="text" class="form-control" id="default_invoice_number_prefix" name="default_invoice_number_prefix" placeholder="Default invoice number prefix">
+		      	</div>
+		      </div>
+		      <div class="form-group">
+		      	<label for="default_payment_term" class="col-sm-2 control-label">Default payment term</label>
+		      	<div class="col-sm-10">
+		      	  <div class="input-group">
+		              <input ng-model="companyUpdate.default_payment_term" type="text" class="form-control" id="default_payment_term" name="default_payment_term" placeholder="Default payment term">
+		              <div class="input-group-addon">days</div>
+		          </div>
+		      	</div>
+		      </div>
+		      <button type="submit" class="btn btn-primary" ng-click="update.$valid && updateInfo()">Update</button>
+		    </form>
+		</tab>
+	</tabset>
+</div>

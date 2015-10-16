@@ -1,0 +1,1 @@
+buckbrowser.controller('ContactCtrl', function($scope) {});

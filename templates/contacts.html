@@ -1,0 +1,26 @@
+<div class="col-md-12">
+<h1>Contacts</h1>
+	<tabset>
+		<tab heading="All contacts" ng-show="contacts.length">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Name</th><th>Edit</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="cont in contacts">
+						<td>{{cont.company}}</td><td><a ng-click="edit(cont.id)">Edit</a></td>
+					</tr>
+				</tbody>
+			</table>
+		</tab>
+		<tab heading="Search" ng-show="contacts.length">
+		</tab>
+		<tab ng-show="thisContact" heading="Edit {{thisContact.name}}" active="editClick">
+		</tab>
+		<tab heading="New contact">
+			Some content
+		</tab>
+	</tabset>
+</div>

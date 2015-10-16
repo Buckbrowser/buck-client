@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" type="text/css" href="css/lavish-bootstrap.css" />
+<style type="text/css">
+table {
+	padding-left: 50px;
+}
+td {
+	padding: 0 10px 0 10px;
+}
+#back_to_top {
+	position: fixed;
+	right: 50px;
+	bottom: 50px;
+}
+</style>
+<title>Buckbrowser API</title>
+</head>
+<body>
+<div class="container">
+	<div id="back_to_top"><a href="#Menu" class="btn btn-primary">Back to top</a></div>
+	<h1 id="Menu">Menu</h1>
+	<ul>
+		<li><a href="#User">User</a></li>
+		<li><a href="#Country">Country</a></li>
+		<li><a href="#Company">Company</a></li>
+		<li><a href="#BankAccount">BankAccount</a></li>
+		<li><a href="#TaxCategory">TaxCategory</a></li>
+		<li><a href="#Contact">Contact</a></li>
+		<li><a href="#Invoice">Invoice</a></li>
+		<li><a href="#Expense">Expense</a></li>
+		<li><a href="#Product">Product</a></li>
+		<li><a href="#ProductCategory">ProductCategory</a></li>
+		<li><a href="#PaymentMethod">PaymentMethod</a></li>
+		<li><a href="#Payment">Payment</a></li>
+		<li><a href="#Template">Template</a></li>
+	</ul>
+	<h1>Introduction</h1>
+	<p>This document describes the API, which defines the communication between the server and the client. It also determines for some situations who is responsible: the server or the client.</p>
+	<h1>Usage</h1>
+	<p>We use named parameters (dictionary 1.1) in this API.</p>
+	<p>Every request should contain the following:</p>
+	   <table class="table">
+	      <tr>
+	         <td>'JSON-RPC'-version</td>
+	      </tr>
+	      <tr>
+	         <td>Method</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>Parameters</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>Request-ID</td>
+	      </tr>
+	   </table>
+	<p>Responses contain the request-ID and either a success or error response as specified with the method. All methods can return the error codes 35964 and 36002.</p>
+	<h2>Primitive parameters</h2>
+	<h3>token</h3>
+	<p><i>Pseudo random key van 32 bytes</i></p>
+	<p>Tokens are specific to a user-company combination. When a user has multiple companies connected and wants to work on the other company, it needs to call User.switch_company which returns a new token.</p>
+	<p>Tokens expire after 168 hours.</p>
+	<h2>Composite parameters</h2>
+	<h3>create_error</h3>
+	<p>{empty_fields, already_exists, incorrect_fields}</p>
+	<p>empty_fieldsarray - Array containing the empty parameters</p>
+	<p>already_existsarray - Array containing the parameters which values are already in the database</p>
+	<p>incorrect_fieldsarray - Array containing the parameters which values are incorrect in some way which is not further defined</p>
+	<h3>update_error</h3>
+	<p>{incorrect_fields}</p>
+	<p>incorrect_fieldsarray - Array containing the parameters which values are incorrect in some way which is not further defined</p>
+	<h2><span>Errorcodes</span></h2>
+	   <table class="table">
+	      <tr>
+	         <td>35964</td><td>Method invocation faulted</td>
+	      </tr>
+	      <tr>
+	         <td>36000</td><td>Not logged in</td>
+	      </tr>
+	      <tr>
+	         <td>36001</td><td>Wrong permissions</td>
+	      </tr>
+	      <tr>
+	         <td>36002</td><td>Something else we cannot explain</td>
+	      </tr>
+	      <tr>
+	         <td>36003</td><td>Wrong login credentials</td>
+	      </tr>
+	      <tr>
+	         <td>36004</td><td>Identifier not known</td>
+	      </tr>
+	   </table>
+	<h1>Functions</h1>
+	<h2 id="User">User</h2>
+	<h4>Field list</h4>
+	   <table class="table">
+	      <tr>
+	         <td>id</td><td>User identifier</td>
+	      </tr>
+	      <tr>
+	         <td>username</td><td>Username</td>
+	      </tr>
+	      <tr>
+	         <td>password</td><td>User's password</td>
+	      </tr>
+	      <tr>
+	         <td>first_name</td><td>User's first name</td>
+	      </tr>
+	      <tr>
+	         <td>last_name</td><td>User's last name</td>
+	      </tr>
+	      <tr>
+	         <td>email</td><td>Email address</td>
+	      </tr>
+	      <tr>
+	         <td>language</td><td>User's language, parameter to be given as a Country</td>
+	      </tr>
+	      <tr>
+	         <td>registration_date</td><td>Timestamp of when the user registered</td>
+	      </tr>
+	      <tr>
+	         <td>last_active</td><td>Timestamp of when the user was last active</td>
+	      </tr>
+	   </table>
+	<h3>User.create</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>username</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>password</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>email</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>language</td><td><i>(optional)</i></td>
+	      </tr>
+	   </table>
+	<h5>On success</h5>
+	<p>{token}</p>
+	<h5>On error</h5>
+	<p>{registration_error}</p>
+	<h3>User.read</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On succes</h4>
+	<p>{username, email, language, registration_date, last_active}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36003}</p>
+	<h3>User.update</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>username</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>password</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>email</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>language</td><td><i>(optional)</i></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{true}</p>
+	<h4>On error</h4>
+	<p>{36000 | edit_error}</p>
+	<h3>User.delete</h3>
+	<p>When only a token is given, the server will send an email to the user with a verification code. If the user is the last user connected to the company, it will also notify that in the email.</p>
+	<p>When a token and matching verification code are given, the user will be deleted from the database. If the user was the last user connected to the company, the entire company and all of its data will be deleted too.</p>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>verification_code</td><td><i>(optional)</i></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{true}</p>
+	<h4>On error</h4>
+	<p>{36000}</p>
+	<h3>User.authenticate</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>username</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>password</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{token}</p>
+	<h4>On error</h4>
+	<p>{36003}</p>
+	<h3>User.get_all_companies</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{{Company.id, Company.name}}</p>
+	<h4>On error</h4>
+	<p>{36003}</p>
+	<h3>User.switch_company</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>company_id</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{token}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36003 | 36001}</p>
+	<h2 id="Country">Country</h2>
+	<h4>Field list</h4>
+	   <table class="table">
+	      <tr>
+	         <td>id</td><td>Country identifier</td>
+	      </tr>
+	      <tr>
+	         <td>name</td><td>Country name</td>
+	      </tr>
+	      <tr>
+	         <td>locale</td><td>Country abbreviation, such as 'es' for 'Spain'</td>
+	      </tr>
+	   </table>
+	<h3>Country.read</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>id</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{name}</p>
+	<h4>On error</h4>
+	<p>{36004}</p>
+	<h3>Country.get_all</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>None</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{{id, name, locale}}</p>
+	<h4>On error</h4>
+	<p>{}</p>
+	<h2 id="Company">Company</h2>
+	<h4>Field list</h4>
+	   <table class="table">
+	      <tr>
+	         <td>id</td><td>Identifier of the company</td>
+	      </tr>
+	      <tr>
+	         <td>name</td><td>Name of the company</td>
+	      </tr>
+	      <tr>
+	         <td>street_name</td><td>Street name of company's location</td>
+	      </tr>
+	      <tr>
+	         <td>house_number</td><td>House number of company's location</td>
+	      </tr>
+	      <tr>
+	         <td>zipcode</td><td>Zipcode of company's location</td>
+	      </tr>
+	      <tr>
+	         <td>place_name</td><td>Place name of company's location</td>
+	      </tr>
+	      <tr>
+	         <td>id_country</td><td>Identifier of the country the company is located</td>
+	      </tr>
+	      <tr>
+	         <td>email</td><td>Email address of the company</td>
+	      </tr>
+	      <tr>
+	         <td>tax_number</td><td>Tax identification number</td>
+	      </tr>
+	      <tr>
+	         <td>company_registration_number</td><td>The registration number of the company</td>
+	      </tr>
+	      <tr>
+	         <td>default_payment_term</td><td>Default payment term used on invoices</td>
+	      </tr>
+	      <tr>
+	         <td>default_invoice_number_prefix</td><td>A default string used to prepend invoice numbers</td>
+	      </tr>
+	      <tr>
+	         <td>registration_date</td><td>Timestamp of the registration with the API</td>
+	      </tr>
+	   </table>
+	<h3>Company.create</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>name</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>street_name</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>house_number</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>zipcode</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>place_name</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>id_country</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>email</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>tax_number</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>company_registration_number</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>default_invoice_number_prefix</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>default_payment_term</td><td><i>(optional)</i></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{Company.id}</p>
+	<h4>On error</h4>
+	<p>{36000}</p>
+	<h3>Company.read</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{name, street_name, house_number, zipcode, place_name, id_country, email, tax_number, company_registration_number, default_payment_term, default_invoice_number_prefix, registration_date}</p>
+	<h4>On error</h4>
+	<p>{36000, 36004}</p>
+	<h3>Company.update</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>name</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>street_name</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>house_number</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>zipcode</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>place_name</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>id_country</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>email</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>tax_number</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>company_registration_number</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>default_invoice_number_prefix</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>default_payment_term</td><td><i>(optional)</i></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{true}</p>
+	<h4>On error</h4>
+	<p>{36000}</p>
+	<h3>Company.delete</h3>
+	<p>This will delete the company and all data related to it, such as invoices, products etc.</p>
+	<p>Notice: this will delete the current token of the users since tokens are company specific.</p>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{true}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001}</p>
+	<h3>Company.get_all_bank_accounts</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{{BankAccount.id, BankAccount.account_holder, BankAccount.iban, BankAccount.bic}}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001}</p>
+	<h3>Company.get_all_contacts</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{{Contact.id, Contact.company}}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001}</p>
+	<h3>Company.get_all_invoices</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{{Invoice.id, Invoice.id_contact, Invoice.invoice_number}}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h3>Company.add_payment_method</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id_payment_method</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{true}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h2 id="BankAccount">BankAccount</h2>
+	<h4>Field list</h4>
+	   <table class="table">
+	      <tr>
+	         <td>id</td><td>Identifier of the bank account</td>
+	      </tr>
+	      <tr>
+	         <td>id_company</td><td>Identifier of the company this bank account belongs to</td>
+	      </tr>
+	      <tr>
+	         <td>account_holder</td><td>Name of the owner of the account</td>
+	      </tr>
+	      <tr>
+	         <td>iban</td><td>International Bank Account Number</td>
+	      </tr>
+	      <tr>
+	         <td>bic</td><td>Business Identifier Code</td>
+	      </tr>
+	   </table>
+	<h3>BankAccount.create</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>account_holder</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>iban</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>bic</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{BankAccount.id}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001}</p>
+	<h3>BankAccount.read</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{account_holder, iban, bic}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h3>BankAccount.update</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>account_holder</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>iban</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>bic</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{true}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h3>BankAccount.delete</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{true}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h2 id="TaxCategory">TaxCategory</h2>
+	<h4>Field list</h4>
+	   <table class="table">
+	      <tr>
+	         <td>id_country</td><td>Identifier of the country this tax rate belongs to</td>
+	      </tr>
+	      <tr>
+	         <td>id_company</td><td>Identifier of the company this tax rate belongs to</td>
+	      </tr>
+	      <tr>
+	         <td>description</td><td>Describes what the tax rate is used for</td>
+	      </tr>
+	      <tr>
+	         <td>percentage</td><td>Representation of the tax rate percentage as a double</td>
+	      </tr>
+	   </table>
+	<h3>TaxCategory.create</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id_country</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>description</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>percentage</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{TaxCategory.id}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h3>TaxCategory.read</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{country_name, description, percentage}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36004}</p>
+	<h3>TaxCategory.update</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id_country</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>description</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>percentage</td><td><i>(optional)</i></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{true}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h3>TaxCategory.delete</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{true}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h3>TaxCategory.get_all</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{{TaxCategory.id, TaxCategory.id, TaxCategory.description, TaxCategory.percentage}}</p>
+	<h4>On error</h4>
+	<p>{36000}</p>
+	<h2 id="Contact">Contact</h2>
+	<h4>Field list</h4>
+	   <table class="table">
+	      <tr>
+	         <td>id</td><td>Contact identifier</td>
+	      </tr>
+	      <tr>
+	         <td>company</td><td>Name of the company</td>
+	      </tr>
+	      <tr>
+	         <td>first_name</td><td>First name of the contact person</td>
+	      </tr>
+	      <tr>
+	         <td>last_name</td><td>Last name of the contact person</td>
+	      </tr>
+	      <tr>
+	         <td>street_name</td><td>Streetn ame of the company</td>
+	      </tr>
+	      <tr>
+	         <td>house_number</td><td>House number</td>
+	      </tr>
+	      <tr>
+	         <td>zipcode</td><td>Zipcode</td>
+	      </tr>
+	      <tr>
+	         <td>place_name</td><td>Placename</td>
+	      </tr>
+	      <tr>
+	         <td>id_country</td><td>Identifier of the country</td>
+	      </tr>
+	      <tr>
+	         <td>default_payment_term</td><td>Default payment term for the contact in days</td>
+	      </tr>
+	      <tr>
+	         <td>default_auto_reminder</td><td>Boolean for automatic sending of reminders</td>
+	      </tr>
+	   </table>
+	<h3>Contact.create</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>company</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>first_name</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>last_name</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>street_name</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>house_number</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>zipcode</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>place_name</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id_country</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>default_payment_term</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>default_auto_reminder</td><td><i>(optional)</i></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{id}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h3>Contact.read</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{company, first_name, last_name, street_nane, house_number, zipcode, place_name, id_country, default_payment_term, default_auto_reminder}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36004}</p>
+	<h3>Contact.update</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>company</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>first_name</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>last_name</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>street_name</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>house_number</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>zipcode</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>place_name</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>id_country</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>default_payment_term</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>default_auto_reminder</td><td><i>(optional)</i></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{true}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h3>Contact.delete</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{true}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h3>Contact.get_all_invoices</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{{Invoice.id, Invoice.invoice_number}}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h2 id="Invoice">Invoice</h2>
+	<h4>Field list</h4>
+	   <table class="table">
+	      <tr>
+	         <td>id</td><td>Invoice identifier</td>
+	      </tr>
+	      <tr>
+	         <td>id_company</td><td>Company this invoice belongs to</td>
+	      </tr>
+	      <tr>
+	         <td>id_contact</td><td>Contact this invoice will be send to</td>
+	      </tr>
+	      <tr>
+	         <td>invoice_date</td><td>Send timestamp of the invoice</td>
+	      </tr>
+	      <tr>
+	         <td>payment_term</td><td>Term in which the invoice should be payed</td>
+	      </tr>
+	      <tr>
+	         <td>description</td><td>Description of the invoice</td>
+	      </tr>
+	      <tr>
+	         <td>products</td><td>Array of products on the invoice</td>
+	      </tr>
+	      <tr>
+	         <td>invoice_number</td><td>Administrational number identifying the invoice</td>
+	      </tr>
+	      <tr>
+	         <td>paid</td><td>Timestamp at which the invoice was paid</td>
+	      </tr>
+	      <tr>
+	         <td>auto_reminder</td><td>Whether or not id_contact should automatically be reminded if the payment_term expires</td>
+	      </tr>
+	   </table>
+	<h3>Invoice.create</h3>
+	<p>If payment_term is not given, the default_payment_term from the contact will be used.</p>
+	<p>If auto_reminder is not given, the default_auto_reminder from the contact will be used.</p>
+	<p>Product must be in an array, so multiple products can be added.</p>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id_contact</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>payment_term</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>description</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>products</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>auto_reminder</td><td><i>(optional)</i></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{Invoice.id, invoice_number}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h3>Invoice.read</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{id_contact, invoice_date, payment_term, description, products, invoice_number, paid, auto_reminder}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h3>Invoice.update</h3>
+	<p>Product must be in an array, so multiple products can be updated. </p>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id_contact</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>invoice_date</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>payment_term</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>products</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>description</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>paid</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>auto_reminder</td><td><i>(optional)</i></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{true}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h3>Invoice.delete</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{true}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h2 id="Expense">Expense</h2>
+	<h4>Field list</h4>
+	   <table class="table">
+	      <tr>
+	         <td>id</td><td>Expense identifier</td>
+	      </tr>
+	      <tr>
+	         <td>id_company</td><td>Company this expense belongs to</td>
+	      </tr>
+	      <tr>
+	         <td>id_contact</td><td>Contact this expense will be send to</td>
+	      </tr>
+	      <tr>
+	         <td>expense_date</td><td>Send timestamp of the expense</td>
+	      </tr>
+	      <tr>
+	         <td>payment_term</td><td>Term in which the expense should be payed</td>
+	      </tr>
+	      <tr>
+	         <td>products</td><td>Array of products on the expense</td>
+	      </tr>
+	      <tr>
+	         <td>description</td><td>Description of the expense</td>
+	      </tr>
+	      <tr>
+	         <td>payment_reference</td><td>Administrational information the contact wishes to see on the banktransfer you make when payingthe expense</td>
+	      </tr>
+	      <tr>
+	         <td>paid</td><td>Timestamp at which the expense was paid</td>
+	      </tr>
+	   </table>
+	<h3>Expense.create</h3>
+	<p>Product must be in an array, so multiple products can be added.</p>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id_contact</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>expense_date</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>payment_term</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>products</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>description</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>payment_reference</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>paid</td><td><i>(optional)</i></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{Expense.id}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001}</p>
+	<h3>Expense.read</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{id_contact, expense_date, payment_term, products, description, payment_reference, paid, auto_reminder}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h3>Expense.update</h3>
+	<p>Product must be in an array, so multiple products can be updated.</p>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id_contact</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>expense_date</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>payment_term</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>description</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>products</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>payment_reference</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>paid</td><td><i>(optional)</i></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{true}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h3>Expense.delete</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{true}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h2 id="Product">Product</h2>
+	<h4>Field list</h4>
+	   <table class="table">
+	      <tr>
+	         <td>id</td><td>Product identifier</td>
+	      </tr>
+	      <tr>
+	         <td>id_company</td><td>Company the product is used with</td>
+	      </tr>
+	      <tr>
+	         <td>amount</td><td>Price of the product in cents</td>
+	      </tr>
+	      <tr>
+	         <td>description</td><td>Description of the product</td>
+	      </tr>
+	      <tr>
+	         <td>id_tax_category</td><td>Identifier of the tax category that is applied</td>
+	      </tr>
+	      <tr>
+	         <td>id_product_category</td><td>Identifier of the product category this product belongs to</td>
+	      </tr>
+	   </table>
+	<h3>Product.create</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>amount</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>description</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id_tax_category</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id_product_category</td><td><i>(optional)</i></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{Product.id}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001}</p>
+	<h3>Product.read</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{amount, description, id_tax_category, id_product_category}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h3>Product.update</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{amount, description, id_tax_category, id_product_category}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h3>Product.delete</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{true}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h2 id="ProductCategory">ProductCategory</h2>
+	<h4>Field list</h4>
+	   <table class="table">
+	      <tr>
+	         <td>id</td><td>Product category identifier</td>
+	      </tr>
+	      <tr>
+	         <td>name</td><td>Name of the product category</td>
+	      </tr>
+	      <tr>
+	         <td>id_company</td><td>Identifier of the company this product category belongs to</td>
+	      </tr>
+	   </table>
+	<h3>ProductCategory.create</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>name</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{ProductCategory.id}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001}</p>
+	<h3>ProductCategory.read</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{name, id_company}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h3>ProductCategory.update</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>name</td><td><i>(optional)</i></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{true}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h3>ProductCategory.delete</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{true}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h3>ProductCategory.get_all</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{{name}}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h3>ProductCategory.get_all_products</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{{Product.id, Product.description, Product.amount, Product.id_tax_category}}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h2 id="PaymentMethod">PaymentMethod</h2>
+	<h4>Field list</h4>
+	   <table class="table">
+	      <tr>
+	         <td>id</td><td>Payment method identifier</td>
+	      </tr>
+	      <tr>
+	         <td>name</td><td>Name of the payment method</td>
+	      </tr>
+	      <tr>
+	         <td>method_name</td><td>Method name</td>
+	      </tr>
+	   </table>
+	<h3>PaymentMethod.get_all</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{{id, name, method_name}, {bank_name, bank_id}}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h2 id="Payment">Payment</h2>
+	<h4>Field list</h4>
+	   <table class="table">
+	      <tr>
+	         <td>id</td><td>Paymentidentifier</td>
+	      </tr>
+	      <tr>
+	         <td>id_invoice</td><td>Invoice identifier</td>
+	      </tr>
+	      <tr>
+	         <td>payment_id</td><td>Payment identifier of the payment provider</td>
+	      </tr>
+	      <tr>
+	         <td>id_payment_method</td><td>Payment method identifier</td>
+	      </tr>
+	   </table>
+	<h3>Payment.create</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id_invoice</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id_payment_method</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>bank_id</td><td><i>(optional)</i></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{true}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h3>Payment.delete</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{true}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h2 id="Template">Template</h2>
+	<h4>Field list</h4>
+	   <table class="table">
+	      <tr>
+	         <td>id</td><td>Template identifier</td>
+	      </tr>
+	      <tr>
+	         <td>name</td><td>Name of the template</td>
+	      </tr>
+	      <tr>
+	         <td>id_company</td><td>Identifier of the company who's template it is</td>
+	      </tr>
+	      <tr>
+	         <td>content</td><td>The bas64-encoded template</td>
+	      </tr>
+	   </table>
+	<h3>Template.create</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>name</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>content</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{true}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h3>Template.read</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{name, content}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h3>Template.update</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>name</td><td><i>(optional)</i></td>
+	      </tr>
+	      <tr>
+	         <td>content</td><td><i>(optional)</i></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{true}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h3>Template.delete</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	      <tr>
+	         <td>id</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{true}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h3>Template.get_all</h3>
+	<h4>Parameters</h4>
+	   <table class="table">
+	      <tr>
+	         <td>token</td><td></td>
+	      </tr>
+	   </table>
+	<h4>On success</h4>
+	<p>{id, name}</p>
+	<h4>On error</h4>
+	<p>{36000 | 36001 | 36004}</p>
+	<h3>&nbsp;</h3>
+	<h1>Dictionary</h1>
+	<h4>1.1 Named parameters</h4>
+	<p>Named parameters, or keyword arguments, is a means of using arguments that avoids the need of order. Every parameter is given a name, which ensures easy parameter use and creates more secureness on the server side.</p>
+</div>
+</body>
+</html>

@@ -1,0 +1,35 @@
+body {
+	padding-top: 50px;
+}
+
+.jumbotron {
+	padding-top: 10px;
+}
+
+.modal-backdrop {
+	bottom: 0;
+}
+
+.tab-content {
+	padding: 15px;
+}
+
+a {
+	cursor: pointer;
+}
+
+.input-group-addon {
+	color: #fff;
+}
+
+.alert.ng-hide-add,
+.alert.ng-hide-remove {
+
+    -moz-transition: 0.5s linear all;
+    -o-transition: 0.5s linear all;
+    -webkit-transition: 0.5s linear all;
+    transition: 0.5s linear all;
+
+    display: block !important;
+    opacity: 1;
+}

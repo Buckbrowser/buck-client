@@ -1,0 +1,1 @@
+buckbrowser.controller('HomeCtrl', function($scope) {});

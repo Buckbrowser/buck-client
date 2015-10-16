@@ -1,0 +1,111 @@
+<div ng-show="register">
+  <div class="modal-header">
+    <h3 class="modal-title">Register</h3>
+  </div>
+  <div class="modal-body">
+    <alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)" dismiss-on-timeout="3000">{{alert.msg}}</alert>
+    <form role="form" class="form-horizontal" name="userCreate" novalidate>
+      <div class="form-group" ng-class="{'has-error': userCreate.username.$invalid && userCreate.username.$dirty}">
+        <label for="username" class="col-sm-2 control-label">Username</label>
+        <div class="col-sm-10">
+          <input ng-model="user.username" type="text" class="form-control" id="username" name="username" placeholder="Username" required>
+          <p class="help-block" ng-show="userCreate.username.$error.required && userCreate.username.$dirty">This field is required.</p>
+        </div>
+      </div>
+      <div class="form-group" ng-class="{'has-error': (userCreate.password.$invalid && userCreate.password.$dirty) || (userCreate.passwordCheck.$invalid && userCreate.passwordCheck.$dirty)}">
+        <label for="password" class="col-sm-2 control-label">Password</label>
+        <div class="col-sm-10">
+          <div class="form-group row">
+            <div class="col-sm-6">
+              <input ng-model="user.password" type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+              <p class="help-block" ng-show="userCreate.password.$error.required && userCreate.password.$dirty">This field is required.</p>
+            </div>
+            <div class="col-sm-6">
+              <input ng-model="user.checkpassword" type="password" class="form-control" id="checkpassword" name="passwordCheck" placeholder="Password check" match="user.password" required>
+              <p class="help-block" ng-show="userCreate.passwordCheck.$error.match && userCreate.passwordCheck.$dirty">This field needs to match 'Password'.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group" ng-class="{'has-error': userCreate.email.$invalid && userCreate.email.$dirty}">
+        <label for="email" class="col-sm-2 control-label">Email address</label>
+        <div class="col-sm-10">
+          <input ng-model="user.email" type="email" class="form-control" id="email" name="email" placeholder="Email address" required overwrite-email>
+          <p class="help-block" ng-show="userCreate.email.$error.required && userCreate.email.$dirty">This field is required.</p>
+          <p class="help-block" ng-show="userCreate.email.$error.email && userCreate.email.$dirty">This field has to be a correct email address.</p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="language" class="col-sm-2 control-label">Language</label>
+        <div class="col-sm-10">
+          <select class="form-control" id="language" ng-model="user.language">
+            <option ng-repeat="country in countries" value="{{country.id}}">{{country.name}} ({{country.locale}})</option>
+          </select>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="submit" class="btn btn-primary" ng-click="userCreate.$valid && registerUser()">Register user</button>
+  </div>
+</div>
+<div ng-show="newCompany">
+  <div class="modal-header">
+    <h3 class="modal-title">Create company</h3>
+  </div>
+  <div class="modal-body">
+    <alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)" dismiss-on-timeout="3000">{{alert.msg}}</alert>
+    <form role="form" class="form-horizontal" name="companyCreate" novalidate>
+      <div class="form-group" ng-class="{'has-error': companyCreate.name.$invalid && companyCreate.name.$dirty}">
+        <label for="name" class="col-sm-2 control-label">Company name</label>
+        <div class="col-sm-10">
+          <input ng-model="company.name" type="text" class="form-control" id="name" name="name" placeholder="Company name" required>
+          <p class="help-block" ng-show="companyCreate.name.$error.required && companyCreate.name.$dirty">This field is required.</p>
+        </div>
+      </div>
+      <div class="form-group" ng-class="{'has-error': companyCreate.email.$invalid && companyCreate.username.$dirty}">
+        <label for="email" class="col-sm-2 control-label">Company email address</label>
+        <div class="col-sm-10">
+          <input ng-model="company.email" type="text" class="form-control" id="email" name="email" placeholder="Company email address" required overwrite-email>
+          <p class="help-block" ng-show="companyCreate.email.$error.required && companyCreate.email.$dirty">This field is required.</p>
+          <p class="help-block" ng-show="companyCreate.email.$error.email && companyCreate.email.$dirty">This field has to be a correct email address.</p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="street_name" class="col-sm-2 control-label">Address</label>
+        <div class="col-sm-10">
+          <div class="form-group row">
+            <div class="col-sm-10">
+              <input ng-model="company.street_name" type="text" class="col-sm-6 form-control" id="street_name" placeholder="Street name">
+            </div>
+            <div class="col-sm-2">
+              <input ng-model="company.house_number" type="text" class="col-sm-2 form-control" id="house_number" placeholder="1">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="country" class="col-sm-2 control-label">Country</label>
+        <div class="col-sm-10">
+          <select class="form-control" id="id_country" ng-model="company.id_country">
+            <option ng-repeat="country in countries" value="{{country.id}}">{{country.name}} ({{country.locale}})</option>
+          </select>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="submit" class="btn btn-primary" ng-click="registerCompany()">Register company</button>
+  </div>
+</div>
+<div ng-show="success">
+  <div class="modal-header">
+    <h3 class="modal-title">Registration succesful</h3>
+  </div>
+  <div class="modal-body">
+    <alert type="success">Your registration was succesful. You have been sent an email with more information.</alert>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-primary" ng-click="completeRegistration()">Continue</button>
+  </div>
+</div>
