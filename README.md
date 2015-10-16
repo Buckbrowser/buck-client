@@ -1,5 +1,5 @@
 # buck-client
-Front-end implementing the API from buck-server
+Front-end implementing the API from [buck-server](https://github.com/Buckbrowser/buck-server/)
 
 ## Setting up development environment
 1. Clone buck-client to your machine and change directory to it.
