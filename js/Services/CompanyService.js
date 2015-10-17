@@ -11,7 +11,7 @@ buckbrowser.service('CompanyService', function($http, $q, ErrorService) {
 				$http.jsonrpc(api, 'Company.read', {token: localStorage.buckbrowserToken})
 				.success(function(data, status, headers, config){
 					var errors = ErrorService.handle(data.result);
-					if (errors.length>0)
+					if (errors.length > 0)
 					{
 						console.log(errors);
 						deferred.reject();
@@ -30,6 +30,37 @@ buckbrowser.service('CompanyService', function($http, $q, ErrorService) {
 		},
 		'update': function(company) {
 			this.company = company;
+		},
+		'get_all_contacts': function() {
+			var deferred = $q.defer();
+			if (this.contacts)
+			{
+				deferred.resolve(this.contacts);
+			}
+			else
+			{
+				$http.jsonrpc(api, 'Company.get_all_contacts', {token: localStorage.buckbrowserToken})
+				.success(function(data, status, headers, config){
+					var errors = ErrorService.handle(data.result);
+					if (errors.length>0)
+					{
+						console.log(errors);
+						deferred.reject();
+					}
+					else
+					{
+						this.contacts = data.result;
+						deferred.resolve(this.contacts);
+					}
+				}).error(function(data, status, headers, config){
+					alert('Error');
+					deferred.reject();
+				});
+			}
+			return deferred.promise;
+		},
+		'add_contact': function(contact) {
+			this.contacts.push(contact);
 		}
 	}
 });

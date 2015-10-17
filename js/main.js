@@ -3,7 +3,6 @@ var buckbrowser = angular.module('main', ['ui.bootstrap', 'ngRoute', 'angular-js
 //var api = 'http://buckbrowser/server/buckbrowser.php'; // Rien home
 //var api = 'http://buckbrowser.local/buckbrowser.php'; // Wybren virtual host
 var api = 'http://buckserver.langstra.nl/buckbrowser.php'; // Wybren RasPi2
-//var api = 'http://5.61.248.107/~buck/server/buckbrowser.php'; // Hosting Rien
 
 buckbrowser.config(function($routeProvider) {
 	// Routing
@@ -40,7 +39,18 @@ buckbrowser.config(function($routeProvider) {
 		controller: 'ContactsCtrl',
 		identifier: 'contacts',
 		access: {
-			requiresLogin: true
+			requiresLogin: true,
+			requiresCompany: true
+		}
+	})
+
+	.when('/delete_company/:verification_code', {
+		templateUrl: 'templates/delete_company.html',
+		controller: 'DeleteCompanyCtrl',
+		identifier: 'delete_company',
+		access: {
+			requiresLogin: true,
+			requiresCompany: true
 		}
 	})
 
@@ -73,6 +83,15 @@ buckbrowser.run(function($rootScope, $http, $location) {
 			{
 				$location.path("/home");
 			}
+			/******** BLOCK OF UNTESTED CODE ********/
+			if (next.access.requiresCompany)
+			{
+				CompanyService.get().then(function(company) {/*there is a company, do nothing*/}).then(function(company){
+					/* No company found */
+					$location.path("/home");
+				});
+			}
+			/******** END OF BLOCK ********/
 		}
 	});
 });

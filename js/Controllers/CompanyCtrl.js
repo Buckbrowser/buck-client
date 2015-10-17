@@ -37,6 +37,23 @@ buckbrowser.controller('CompanyCtrl', function($scope, $http, CompanyService, Co
 		});
 	};
 
+	$scope.delete = function() {
+		$http.jsonrpc(api, 'Company.delete', {token: localStorage.buckbrowserToken, url: delete_company_url})
+		.success(function(data, status, headers, config){
+			var errors = ErrorService.handle(data.result);
+			if (errors.length > 0)
+			{
+				$scope.alerts = errors;
+			}
+			else
+			{
+				$scope.alerts.push({type: 'info', msg: 'An email has been send to '+$scope.company.email+'. Please follow the instructions in that email to confirm deleting your account.'});
+			}
+		}).error(function(data, status, headers, config){
+			alert('Error');
+		});
+	};
+
 	$scope.closeAlert = function(index) {
 		$scope.alerts.splice(index, 1);
 	};

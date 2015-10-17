@@ -3,7 +3,6 @@ var buckbrowser = angular.module('main', ['ui.bootstrap', 'ngRoute', 'angular-js
 //var api = 'http://buckbrowser/server/buckbrowser.php'; // Rien home
 //var api = 'http://buckbrowser.local/buckbrowser.php'; // Wybren virtual host
 var api = 'http://buckserver.langstra.nl/buckbrowser.php'; // Wybren RasPi2
-//var api = 'http://5.61.248.107/~buck/server/buckbrowser.php'; // Hosting Rien
 
 buckbrowser.config(function($routeProvider) {
 	// Routing
@@ -40,7 +39,18 @@ buckbrowser.config(function($routeProvider) {
 		controller: 'ContactsCtrl',
 		identifier: 'contacts',
 		access: {
-			requiresLogin: true
+			requiresLogin: true,
+			requiresCompany: true
+		}
+	})
+
+	.when('/delete_company/:verification_code', {
+		templateUrl: 'templates/delete_company.html',
+		controller: 'DeleteCompanyCtrl',
+		identifier: 'delete_company',
+		access: {
+			requiresLogin: true,
+			requiresCompany: true
 		}
 	})
 
@@ -73,6 +83,15 @@ buckbrowser.run(function($rootScope, $http, $location) {
 			{
 				$location.path("/home");
 			}
+			/******** BLOCK OF UNTESTED CODE ********/
+			if (next.access.requiresCompany)
+			{
+				CompanyService.get().then(function(company) {/*there is a company, do nothing*/}).then(function(company){
+					/* No company found */
+					$location.path("/home");
+				});
+			}
+			/******** END OF BLOCK ********/
 		}
 	});
 });
@@ -234,14 +253,40 @@ buckbrowser.controller('CompanyCtrl', function($scope, $http, CompanyService, Co
 		});
 	};
 
+	$scope.delete = function() {
+		$http.jsonrpc(api, 'Company.delete', {token: localStorage.buckbrowserToken, url: delete_company_url})
+		.success(function(data, status, headers, config){
+			var errors = ErrorService.handle(data.result);
+			if (errors.length > 0)
+			{
+				$scope.alerts = errors;
+			}
+			else
+			{
+				$scope.alerts.push({type: 'info', msg: 'An email has been send to '+$scope.company.email+'. Please follow the instructions in that email to confirm deleting your account.'});
+			}
+		}).error(function(data, status, headers, config){
+			alert('Error');
+		});
+	};
+
 	$scope.closeAlert = function(index) {
 		$scope.alerts.splice(index, 1);
 	};
 });
 buckbrowser.controller('ContactCtrl', function($scope) {});
-buckbrowser.controller('ContactsCtrl', function($scope, $rootScope, $http) {
-	$scope.contacts = [{company: 'Rien', id: 36}];
+buckbrowser.controller('ContactsCtrl', function($scope, $rootScope, $http, CompanyService, CountryService, ErrorService) {
+	$scope.alerts = [];
+
+	$scope.contacts = {};
+	CompanyService.get_all_contacts().then(function(contacts) {	$scope.contacts = contacts;	});
 	$scope.editClick = false;
+
+	$scope.newContact = {};
+	$scope.countries = {};
+	CountryService.get_all().then(function(countries) {
+		$scope.countries=countries;
+	});
 
 	$scope.edit = function(id) {
 		$http.jsonrpc(api, 'Contact.read', {token: localStorage.buckbrowserToken, id: id})
@@ -255,6 +300,52 @@ buckbrowser.controller('ContactsCtrl', function($scope, $rootScope, $http) {
 			{
 				$scope.thisContact = data.result.contact;
 				$scope.editClick = true;
+			}
+		}).error(function(data, status, headers, config){
+			alert('Error');
+		});
+	};
+
+	$scope.newContact = function() {
+		var new_contact = angular.copy($scope.newContact);
+		var parameters = angular.copy(new_contact);
+		parameters.token = localStorage.buckbrowserToken;
+		$http.jsonrpc(api, 'Contact.create', parameters)
+		.success(function(data, status, headers, config){
+			var errors = ErrorService.handle(data.result);
+			if (errors.length > 0)
+			{
+				$scope.alerts = errors;
+			}
+			else
+			{
+				CompanyService.add_contact(new_contact);
+				$scope.contacts.push(new_contact);
+				$scope.newContact = {};
+				$scope.alerts.push({type: 'success', msg: 'Contact created successfully'});
+			}
+		}).error(function(data, status, headers, config){
+			alert('Error');
+		});
+	};
+
+
+});
+buckbrowser.controller('DeleteCompanyCtrl', function($scope, $http, $routeParams, ErrorService, CompanyService) {
+	$scope.alerts = [];
+
+	$scope.delete = function() {
+		$http.jsonrpc(api, 'Company.delete', {token: localStorage.buckbrowserToken, verification_code: $routeParams.verification_code})
+		.success(function(data, status, headers, config){
+			var errors = ErrorService.handle(data.result);
+			if (errors.length > 0)
+			{
+				$scope.alerts = errors;
+			}
+			else
+			{
+				CompanyService.update(null);
+				$scope.alerts.push({type: 'success', msg: 'Your company has been deleted succesfully'});
 			}
 		}).error(function(data, status, headers, config){
 			alert('Error');
@@ -428,7 +519,7 @@ buckbrowser.service('CompanyService', function($http, $q, ErrorService) {
 				$http.jsonrpc(api, 'Company.read', {token: localStorage.buckbrowserToken})
 				.success(function(data, status, headers, config){
 					var errors = ErrorService.handle(data.result);
-					if (errors.length>0)
+					if (errors.length > 0)
 					{
 						console.log(errors);
 						deferred.reject();
@@ -447,6 +538,37 @@ buckbrowser.service('CompanyService', function($http, $q, ErrorService) {
 		},
 		'update': function(company) {
 			this.company = company;
+		},
+		'get_all_contacts': function() {
+			var deferred = $q.defer();
+			if (this.contacts)
+			{
+				deferred.resolve(this.contacts);
+			}
+			else
+			{
+				$http.jsonrpc(api, 'Company.get_all_contacts', {token: localStorage.buckbrowserToken})
+				.success(function(data, status, headers, config){
+					var errors = ErrorService.handle(data.result);
+					if (errors.length>0)
+					{
+						console.log(errors);
+						deferred.reject();
+					}
+					else
+					{
+						this.contacts = data.result;
+						deferred.resolve(this.contacts);
+					}
+				}).error(function(data, status, headers, config){
+					alert('Error');
+					deferred.reject();
+				});
+			}
+			return deferred.promise;
+		},
+		'add_contact': function(contact) {
+			this.contacts.push(contact);
 		}
 	}
 });
@@ -586,7 +708,6 @@ buckbrowser.service('ErrorService', function() {
 });
 buckbrowser.service('UserService', function($http, ErrorService, $q) {
 	return {
-		'multiComp': false,
 		'get': function() {
 			var deferred = $q.defer();
 			if (this.user)
@@ -644,3 +765,7 @@ buckbrowser.service('UserService', function($http, ErrorService, $q) {
 		}
 	}
 });
+// This url is used for the api-call Company.delete
+var delete_company_url = "localhost:8000/#/company_delete/%verification-code%/";
+// This url is used for te api-call User.delete
+var delete_account_url = "localhost:8000/#/account_delete/%verification-code%/";

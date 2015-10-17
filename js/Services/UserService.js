@@ -1,6 +1,5 @@
 buckbrowser.service('UserService', function($http, ErrorService, $q) {
 	return {
-		'multiComp': false,
 		'get': function() {
 			var deferred = $q.defer();
 			if (this.user)

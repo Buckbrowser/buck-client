@@ -126,5 +126,10 @@
 		      <button type="submit" class="btn btn-primary" ng-click="update.$valid && updateInfo()">Update</button>
 		    </form>
 		</tab>
+		<tab heading="Delete {{company.name}}">
+			If you are entirely sure you want to delete your company, click this button.
+			<hr>
+			<button class="btn btn-danger" ng-click="delete()">Delete {{company.name}}</button>
+		</tab>
 	</tabset>
 </div>
