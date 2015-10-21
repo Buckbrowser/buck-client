@@ -66,7 +66,7 @@ buckbrowser.config(function($routeProvider) {
 	});
 });
 
-buckbrowser.run(function($rootScope, $http, $location) {
+buckbrowser.run(function($rootScope, $http, $location, CompanyService) {
 	if (localStorage.buckbrowserToken)
 	{
 		$rootScope.loggedIn = true;
@@ -83,15 +83,12 @@ buckbrowser.run(function($rootScope, $http, $location) {
 			{
 				$location.path("/home");
 			}
-			/******** BLOCK OF UNTESTED CODE ********/
 			if (next.access.requiresCompany)
 			{
-				CompanyService.get().then(function(company) {/*there is a company, do nothing*/}).then(function(company){
-					/* No company found */
-					$location.path("/home");
-				});
+				CompanyService.get().then(function(company)
+				{ /* company found, do nothing */},function(company)
+				{ $location.path("/home"); });
 			}
-			/******** END OF BLOCK ********/
 		}
 	});
 });
@@ -280,15 +277,18 @@ buckbrowser.controller('ContactsCtrl', function($scope, $rootScope, $http, Compa
 
 	$scope.contacts = {};
 	CompanyService.get_all_contacts().then(function(contacts) {	$scope.contacts = contacts;	});
-	$scope.editClick = false;
+	$scope.updateClick = false;
 
 	$scope.newContact = {};
+	$scope.thisContact = {};
+
 	$scope.countries = {};
 	CountryService.get_all().then(function(countries) {
 		$scope.countries=countries;
 	});
 
-	$scope.edit = function(id) {
+
+	$scope.showUpdate = function(id) {
 		$http.jsonrpc(api, 'Contact.read', {token: localStorage.buckbrowserToken, id: id})
 		.success(function(data, status, headers, config){
 			if (data.result.error)
@@ -298,15 +298,38 @@ buckbrowser.controller('ContactsCtrl', function($scope, $rootScope, $http, Compa
 			}
 			else
 			{
-				$scope.thisContact = data.result.contact;
-				$scope.editClick = true;
+				$scope.thisContact = data.result;
+				$scope.updateClick = true;
 			}
 		}).error(function(data, status, headers, config){
 			alert('Error');
 		});
 	};
 
-	$scope.newContact = function() {
+	$scope.updateContact = function() {
+		var this_contact = angular.copy($scope.thisContact);
+		var parameters = angular.copy(this_contact);
+		parameters.token = localStorage.buckbrowserToken;
+		$http.jsonrpc(api, 'Contact.update', {parameters})
+		.success(function(data, status, headers, config){
+			var errors = ErrorService.handle(data.result);
+			if (errors.length > 0)
+			{
+				$scope.alerts = errors;
+			}
+			else
+			{
+				CompanyService.update_contact(this_contact);
+				CompanyService.get_all_contacts().then(function(contacts) {	$scope.contacts = contacts;	});
+				$scope.thisContact = {};
+				$scope.alerts.push({type: 'success', msg: this_contact.company+' updated successfully'});
+			}
+		}).error(function(data, status, headers, config){
+			alert('Error');
+		});
+	};
+
+	$scope.createNewContact = function() {
 		var new_contact = angular.copy($scope.newContact);
 		var parameters = angular.copy(new_contact);
 		parameters.token = localStorage.buckbrowserToken;
@@ -521,6 +544,7 @@ buckbrowser.service('CompanyService', function($http, $q, ErrorService) {
 					var errors = ErrorService.handle(data.result);
 					if (errors.length > 0)
 					{
+						console.log('hoi');
 						console.log(errors);
 						deferred.reject();
 					}
@@ -569,6 +593,16 @@ buckbrowser.service('CompanyService', function($http, $q, ErrorService) {
 		},
 		'add_contact': function(contact) {
 			this.contacts.push(contact);
+		},
+		'update_contact': function(contact) {
+			for (var i=0;i<contacts.length;i++)
+			{
+				if (contacts[i]['id'] == contact.id)
+				{
+					contacts[i]['company'] == contact.company;
+					break;
+				}
+			}
 		}
 	}
 });

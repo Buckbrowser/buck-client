@@ -13,6 +13,7 @@ buckbrowser.service('CompanyService', function($http, $q, ErrorService) {
 					var errors = ErrorService.handle(data.result);
 					if (errors.length > 0)
 					{
+						console.log('hoi');
 						console.log(errors);
 						deferred.reject();
 					}
@@ -61,6 +62,16 @@ buckbrowser.service('CompanyService', function($http, $q, ErrorService) {
 		},
 		'add_contact': function(contact) {
 			this.contacts.push(contact);
+		},
+		'update_contact': function(contact) {
+			for (var i=0;i<contacts.length;i++)
+			{
+				if (contacts[i]['id'] == contact.id)
+				{
+					contacts[i]['company'] == contact.company;
+					break;
+				}
+			}
 		}
 	}
 });

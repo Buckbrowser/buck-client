@@ -66,7 +66,7 @@ buckbrowser.config(function($routeProvider) {
 	});
 });
 
-buckbrowser.run(function($rootScope, $http, $location) {
+buckbrowser.run(function($rootScope, $http, $location, CompanyService) {
 	if (localStorage.buckbrowserToken)
 	{
 		$rootScope.loggedIn = true;
@@ -83,15 +83,12 @@ buckbrowser.run(function($rootScope, $http, $location) {
 			{
 				$location.path("/home");
 			}
-			/******** BLOCK OF UNTESTED CODE ********/
 			if (next.access.requiresCompany)
 			{
-				CompanyService.get().then(function(company) {/*there is a company, do nothing*/}).then(function(company){
-					/* No company found */
-					$location.path("/home");
-				});
+				CompanyService.get().then(function(company)
+				{ /* company found, do nothing */},function(company)
+				{ $location.path("/home"); });
 			}
-			/******** END OF BLOCK ********/
 		}
 	});
 });
