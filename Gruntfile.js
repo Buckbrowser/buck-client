@@ -17,11 +17,8 @@ module.exports = function(grunt) {
 				tasks: ['concat']
 			},
 			bootstrap: {
-				files: [bootstrapURL+'less/**'],
+				files: ['less/**'],
 				tasks: ['less','cssmin']
-			},
-			styles: {
-				files: ['css/*']
 			},
 			templates: {
 				files: ['templates/*']
@@ -35,19 +32,11 @@ module.exports = function(grunt) {
 				files: [{
 					expand: true,
 					cwd: 'css/',
-					src: 'bootstrap.css',
+					src: 'styles.css',
 					dest: 'css/',
 					ext: '.min.css'
 				}]
 			}
-		},
-		copy: {
-			fonts: {
-	        expand: true,
-	        src: bootstrapURL+'fonts/*',
-	        dest: 'fonts/',
-	        flatten: true
-	      },
 		},
 		connect: {
 			server: {
@@ -62,14 +51,14 @@ module.exports = function(grunt) {
 		        options: {
 		          strictMath: true
 		        },
-		        src: bootstrapURL+'less/bootstrap.less',
-		        dest: 'css/bootstrap.css'
+		        src: 'less/styles.less',
+		        dest: 'css/styles.css'
 			}
 		}
 	});
 
-	grunt.registerTask('server', ['concat','less','cssmin','copy','connect','watch']);
-	grunt.registerTask('default', ['concat','less','cssmin','copy']);
+	grunt.registerTask('server', ['concat','less','cssmin','connect','watch']);
+	grunt.registerTask('default', ['concat','less','cssmin']);
 
 	grunt.loadNpmTasks('grunt-contrib-concat');
 	grunt.loadNpmTasks('grunt-contrib-watch');

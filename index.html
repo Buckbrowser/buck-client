@@ -13,13 +13,12 @@
     <script type="text/javascript" src="js/Libraries/angular-input-match.min.js"></script>
     <script type="text/javascript" src="js/app.js"></script>
     <link rel="stylesheet" type="text/css" href="css/roboto.css" />
-    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
     <link rel="stylesheet" type="text/css" href="css/styles.css" />
   </head>
 
   <body>
 
-    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation" ng-controller="NavbarCtrl">
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation" ng-controller="NavbarCtrl">
       <div class="container">
         <div class="navbar-header">
           <button type="button" class="navbar-toggle collapsed" ng-click="isCollapsed = !isCollapsed">
@@ -43,10 +42,10 @@
           </ul>
           <div class="navbar-right">
             <!-- Public buttons when not logged in -->
-            <button class="btn btn-primary navbar-btn" ng-click="openLogin()" ng-show="!loggedIn">Login</button>
-            <button class="btn btn-primary navbar-btn" ng-click="openRegister()" ng-show="!loggedIn">Register</button>
+            <button class="btn btn-default navbar-btn" ng-click="openLogin()" ng-show="!loggedIn">Login</button>
+            <button class="btn btn-default navbar-btn" ng-click="openRegister()" ng-show="!loggedIn">Register</button>
             <!-- Logged in buttons -->
-            <button class="btn btn-primary navbar-btn" ng-click="logout()" ng-show="loggedIn">Logout</button>
+            <button class="btn btn-default navbar-btn" ng-click="logout()" ng-show="loggedIn">Logout</button>
           </div>
         </div><!--/.navbar-collapse -->
       </div>

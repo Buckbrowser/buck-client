@@ -1,5 +1,6 @@
 buckbrowser.service('CompanyService', function($http, $q, ErrorService) {
 	return {
+		'contacts': [],
 		'get': function() {
 			var deferred = $q.defer();
 			if (this.company)
@@ -34,7 +35,7 @@ buckbrowser.service('CompanyService', function($http, $q, ErrorService) {
 		},
 		'get_all_contacts': function() {
 			var deferred = $q.defer();
-			if (this.contacts)
+			if (this.contacts.length > 0)
 			{
 				deferred.resolve(this.contacts);
 			}
@@ -69,6 +70,16 @@ buckbrowser.service('CompanyService', function($http, $q, ErrorService) {
 				if (contacts[i]['id'] == contact.id)
 				{
 					contacts[i]['company'] == contact.company;
+					break;
+				}
+			}
+		},
+		'delete_contact': function(contact) {
+			for (var i=0;i<contacts.length;i++)
+			{
+				if (contacts[i]['id'] == contact.id)
+				{
+					contacts.splice(i,1);
 					break;
 				}
 			}

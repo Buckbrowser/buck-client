@@ -2,25 +2,27 @@
 <h1>Contacts</h1>
 <alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)" dismiss-on-timeout="3000">{{alert.msg}}</alert>
 	<tabset>
-		<tab heading="All contacts" ng-show="contacts.length">
+		<tab heading="All contacts" ng-show="contacts.length" active="allContacts" select="showAllContacts()">
+			<input type="text" ng-model="searchContact" ng-change="search(searchContact)" class="form-control" placeholder="Search">
 			<table class="table">
 				<thead>
 					<tr>
-						<th>Name</th><th>Edit</th>
+						<th>Name</th><th>Edit</th><th>Remove</th>
 					</tr>
 				</thead>
 				<tbody>
-					<tr ng-repeat="cont in contacts">
-						<td>{{cont.company}}</td><td><a ng-click="showUpdate(cont.id)">Edit</a></td>
+					<tr ng-repeat="result in searchResults" ng-show="searchContact">
+						<td>{{result.company}}</td><td><a ng-click="showUpdate(result.id)">Edit</a></td><td><a ng-click="deleteContact(result.id)">Delete</a>
+					</tr>
+					<tr ng-repeat="cont in contacts" ng-show="!searchContact">
+						<td>{{cont.company}}</td><td><a ng-click="showUpdate(cont.id)">Edit</a></td><td><a ng-click="deleteContact(cont.id)">Delete</a>
 					</tr>
 				</tbody>
 			</table>
 		</tab>
-		<tab heading="Search" ng-show="contacts.length">
-		</tab>
-		<tab ng-show="thisContact.company" heading="Edit {{thisContact.company}}" active="editClick">
+		<tab ng-show="thisContact.company" heading="Edit {{thisContact.company}}" active="updateClick">
 			<form role="form" class="form-horizontal" name="this_contact">
-			  <input type="hidden" name="contact_id" ng-model="thisContact.id">
+			  <input type="hidden" name="id" ng-model="thisContact.id">
 		      <div class="form-group" ng-class="{'has-error': this_contact.company.$error.required}">
 		        <label for="company" class="col-sm-2 control-label">Company name</label>
 		        <div class="col-sm-10">
@@ -109,7 +111,7 @@
 		      <button type="submit" class="btn btn-primary" ng-click="this_contact.$valid && updateContact()">Update {{thisContact.name}}</button>
 		    </form>
 		</tab>
-		<tab heading="New contact">
+		<tab heading="New contact" active="noContacts">
 			<form role="form" class="form-horizontal" name="new_contact">
 		      <div class="form-group" ng-class="{'has-error': new_contact.company.$error.required && new_contact.company.$dirty}">
 		        <label for="company" class="col-sm-2 control-label">Company name</label>
@@ -196,7 +198,7 @@
 				  </div>
 		      	</div>
 		      </div>
-		      <button type="submit" class="btn btn-primary" ng-click="new_contact.$valid && createNewContact()">Create new contact</button>
+		      <button type="submit" class="btn btn-primary" ng-click="new_contact.$valid && createNewContact(new_contact)">Create new contact</button>
 		    </form>
 		</tab>
 	</tabset>
