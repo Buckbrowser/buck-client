@@ -1,4 +1,4 @@
-var buckbrowser = angular.module('main', ['ui.bootstrap', 'ngRoute', 'angular-json-rpc', 'validation.match']);
+var buckbrowser = angular.module('main', ['ui.bootstrap', 'ngRoute', 'angular-json-rpc', 'validation.match', 'mm.iban']);
 
 //var api = 'http://buckbrowser/server/buckbrowser.php'; // Rien home
 //var api = 'http://buckbrowser.local/buckbrowser.php'; // Wybren virtual host
@@ -130,25 +130,9 @@ buckbrowser.controller('AccountCtrl', function($scope, $http, ErrorService, User
 	});
 
 	$scope.companies = [];
-	$http.jsonrpc(api, 'User.get_all_companies', {token: localStorage.buckbrowserToken})
-	.success(function(data, status, headers, config){
-		var errors = ErrorService.handle(data.result);
-		if (errors.length > 0)
-		{
-			$scope.alerts = errors;
-		}
-		else
-		{
-			console.log(data.result);
-			for (var comp in data.result)
-			{
-				$scope.companies.push(data.result[comp]);
-			}
-			console.log($scope.companies);
-		}
-	}).error(function(data, status, headers, config){
-		alert('Error');
-	});
+	UserService.get_all_companies.then(function(companies) {
+		$scope.companies = companies;
+	}).then(function(errors) { $scope.alerts.push(errors); });
 
 	$scope.updateInfo = function() {
 		var parameters = angular.copy($scope.userUpdate);
@@ -167,7 +151,7 @@ buckbrowser.controller('AccountCtrl', function($scope, $http, ErrorService, User
 				$scope.alerts.push({type: 'success', msg: 'Info updated succesfully'});
 			}
 		}).error(function(data, status, headers, config){
-			alert('Error');
+			$scope.alerts.push({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
 		});
 	};
 
@@ -186,7 +170,7 @@ buckbrowser.controller('AccountCtrl', function($scope, $http, ErrorService, User
 				$scope.alerts.push({type: 'success', msg: 'Logged in to other company'});
 			}
 		}).error(function(data, status, headers, config){
-			alert('Error');
+			$scope.alerts.push({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
 		});
 	};
 
@@ -203,7 +187,7 @@ buckbrowser.controller('AccountCtrl', function($scope, $http, ErrorService, User
 				$scope.alerts.push = {type: 'success', msg: 'You will recieve an email about deleting your account shortly.'};
 			}
 		}).error(function(data, status, headers, config){
-			alert('Error');
+			$scope.alerts.push({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
 		});
 	};
 
@@ -215,18 +199,21 @@ buckbrowser.controller('CompanyCtrl', function($scope, $http, CompanyService, Co
 	$scope.alerts = [];
 
 	$scope.company = {};
+	$scope.companyUpdate = {};
 	CompanyService.get().then(function(company) {
 		$scope.company = company;
 		$scope.companyUpdate = angular.copy($scope.company);
 		if (company.id_country != null)
 		{
-			CountryService.get(company.id_country).then(function(country) { $scope.company.country = country; });
+			CountryService.get(company.id_country)
+			.then(function(country) { $scope.company.country = country; })
+			.then(function(errors) { $scope.alerts.push(errors) });
 		}
-	});
+	}).then(function(errors) { $scope.alerts.push(errors); });
 	$scope.countries = {};
 	CountryService.get_all().then(function(countries) {
 		$scope.countries=countries;
-	});
+	}).then(function(errors) { $scope.alerts.push(errors); });
 
 	$scope.updateInfo = function() {
 		var parameters = angular.copy($scope.companyUpdate);
@@ -242,11 +229,13 @@ buckbrowser.controller('CompanyCtrl', function($scope, $http, CompanyService, Co
 			{
 				$scope.company = angular.copy($scope.companyUpdate);
 				CompanyService.update($scope.company);
-				CountryService.get($scope.companyUpdate.id_country).then(function(country) { $scope.company.country = country; });
+				CountryService.get($scope.companyUpdate.id_country)
+				.then(function(country) { $scope.company.country = country; })
+				.then(function(errors) { $scope.alerts.push(errors); });
 				$scope.alerts.push({type: 'success', msg: 'Info updated succesfully'});
 			}
 		}).error(function(data, status, headers, config){
-			alert('Error');
+			$scope.alerts.push({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
 		});
 	};
 
@@ -263,8 +252,12 @@ buckbrowser.controller('CompanyCtrl', function($scope, $http, CompanyService, Co
 				$scope.alerts.push({type: 'info', msg: 'An email has been send to '+$scope.company.email+'. Please follow the instructions in that email to confirm deleting your account.'});
 			}
 		}).error(function(data, status, headers, config){
-			alert('Error');
+			$scope.alerts.push({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
 		});
+	};
+
+	$scope.IBANError = function(value) {
+		return value.$dirty && typeof value.$modelValue === 'undefined';
 	};
 
 	$scope.closeAlert = function(index) {
@@ -421,6 +414,10 @@ buckbrowser.controller('ContactsCtrl', function($scope, $rootScope, $http, Compa
 
 	$scope.showAllContacts = function() {
 		$scope.updateClick = false;
+	};
+
+	$scope.IBANError = function(value) {
+		return value.$dirty && typeof value.$modelValue === 'undefined';
 	};
 
 	$scope.closeAlert = function(index) {
@@ -592,6 +589,7 @@ buckbrowser.filter('nullDisplay', function() {
 /*! angular-test 2013-12-11 */
 angular.module("angular-json-rpc",[]).config(["$provide",function(a){return a.decorator("$http",["$delegate",function(a){return a.jsonrpc=function(b,c,d,e){var f={jsonrpc:"2.0",method:c,params:d,id:1};return a.post(b,f,angular.extend({headers:{"Content-Type":"application/json"}},e))},a}])}]);
 
+(function(){"use strict";var a=function(a,b){return(a%b+ +b)%b};angular.module("mm.iban",["ng"]).constant("ngIbanCountries",{AL:{name:"Albania",regex:/^AL[0-9]{2}[0-9]{8}[A-Z0-9]{16}$/},AD:{name:"Andorra",regex:/^AD[0-9]{2}[0-9]{4}[0-9]{4}[A-Z0-9]{12}$/},AT:{name:"Austria",regex:/^AT[0-9]{2}[0-9]{5}[0-9]{11}$/},AZ:{name:"Azerbaijan, Republic of",regex:/^AZ[0-9]{2}[A-Z]{4}[A-Z0-9]{20}$/},BH:{name:"Bahrain",regex:/^BH[0-9]{2}[A-Z]{4}[A-Z0-9]{14}$/},BE:{name:"Belgium",regex:/^BE[0-9]{2}[0-9]{3}[0-9]{7}[0-9]{2}$/},BA:{name:"Bosnia and Herzegovina",regex:/^BA[0-9]{2}[0-9]{3}[0-9]{3}[0-9]{8}[0-9]{2}$/},BR:{name:"Brazil",regex:/^BR[0-9]{2}[0-9]{8}[0-9]{5}[0-9]{10}[A-Z]{1}[A-Z0-9]{1}$/},BG:{name:"Bulgaria",regex:/^BG[0-9]{2}[A-Z]{4}[0-9]{4}[0-9]{2}[A-Z0-9]{8}$/},CR:{name:"Costa Rica",regex:/^CR[0-9]{2}[0-9]{3}[0-9]{14}$/},HR:{name:"Croatia",regex:/^HR[0-9]{2}[0-9]{7}[0-9]{10}$/},CY:{name:"Cyprus",regex:/^CY[0-9]{2}[0-9]{3}[0-9]{5}[A-Z0-9]{16}$/},CZ:{name:"Czech Republic",regex:/^CZ[0-9]{2}[0-9]{4}[0-9]{6}[0-9]{10}$/},DK:{name:"Denmark",regex:/^DK[0-9]{2}[0-9]{4}[0-9]{9}[0-9]{1}$/},DO:{name:"Dominican Republic",regex:/^DO[0-9]{2}[A-Z0-9]{4}[0-9]{20}$/},EE:{name:"Estonia",regex:/^EE[0-9]{2}[0-9]{2}[0-9]{2}[0-9]{11}[0-9]{1}$/},FO:{name:"Faroe Islands",regex:/^FO[0-9]{2}[0-9]{4}[0-9]{9}[0-9]{1}$/},FI:{name:"Finland",regex:/^FI[0-9]{2}[0-9]{6}[0-9]{7}[0-9]{1}$/},FR:{name:"France",regex:/^FR[0-9]{2}[0-9]{5}[0-9]{5}[A-Z0-9]{11}[0-9]{2}$/},GE:{name:"Georgia",regex:/^GE[0-9]{2}[A-Z]{2}[0-9]{16}$/},DE:{name:"Germany",regex:/^DE[0-9]{2}[0-9]{8}[0-9]{10}$/},GI:{name:"Gibraltar",regex:/^GI[0-9]{2}[A-Z]{4}[A-Z0-9]{15}$/},GR:{name:"Greece",regex:/^GR[0-9]{2}[0-9]{3}[0-9]{4}[A-Z0-9]{16}$/},GL:{name:"Greenland",regex:/^GL[0-9]{2}[0-9]{4}[0-9]{9}[0-9]{1}$/},GT:{name:"Guatemala",regex:/^GT[0-9]{2}[A-Z0-9]{4}[A-Z0-9]{20}$/},HU:{name:"Hungary",regex:/^HU[0-9]{2}[0-9]{3}[0-9]{4}[0-9]{1}[0-9]{15}[0-9]{1}$/},IS:{name:"Iceland",regex:/^IS[0-9]{2}[0-9]{4}[0-9]{2}[0-9]{6}[0-9]{10}$/},IE:{name:"Ireland",regex:/^IE[0-9]{2}[A-Z]{4}[0-9]{6}[0-9]{8}$/},IL:{name:"Israel",regex:/^IL[0-9]{2}[0-9]{3}[0-9]{3}[0-9]{13}$/},IT:{name:"Italy",regex:/^IT[0-9]{2}[A-Z]{1}[0-9]{5}[0-9]{5}[A-Z0-9]{12}$/},KZ:{name:"Kazakhstan",regex:/^KZ[0-9]{2}[0-9]{3}[A-Z0-9]{13}$/},KW:{name:"Kuwait",regex:/^KW[0-9]{2}[A-Z]{4}[A-Z0-9]{22}$/},LV:{name:"Latvia",regex:/^LV[0-9]{2}[A-Z]{4}[A-Z0-9]{13}$/},LB:{name:"Lebanon",regex:/^LB[0-9]{2}[0-9]{4}[A-Z0-9]{20}$/},LI:{name:"Liechtenstein (Principality of)",regex:/^LI[0-9]{2}[0-9]{5}[A-Z0-9]{12}$/},LT:{name:"Lithuania",regex:/^LT[0-9]{2}[0-9]{5}[0-9]{11}$/},LU:{name:"Luxembourg",regex:/^LU[0-9]{2}[0-9]{3}[A-Z0-9]{13}$/},MK:{name:"Macedonia",regex:/^MK[0-9]{2}[0-9]{3}[A-Z0-9]{10}[0-9]{2}$/},MT:{name:"Malta",regex:/^MT[0-9]{2}[A-Z]{4}[0-9]{5}[A-Z0-9]{18}$/},MR:{name:"Mauritania",regex:/^MR[0-9]{2}[0-9]{5}[0-9]{5}[0-9]{11}[0-9]{2}$/},MU:{name:"Mauritius",regex:/^MU[0-9]{2}[A-Z]{4}[0-9]{2}[0-9]{2}[0-9]{12}[0-9]{3}[A-Z]{3}$/},MD:{name:"Moldova, Republic of",regex:/^MD[0-9]{2}[A-Z0-9]{20}$/},MC:{name:"Monaco",regex:/^MC[0-9]{2}[0-9]{5}[0-9]{5}[A-Z0-9]{11}[0-9]{2}$/},ME:{name:"Montenegro",regex:/^ME[0-9]{2}[0-9]{3}[0-9]{13}[0-9]{2}$/},NL:{name:"Netherlands",regex:/^NL[0-9]{2}[A-Z]{4}[0-9]{10}$/},NO:{name:"Norway",regex:/^NO[0-9]{2}[0-9]{4}[0-9]{6}[0-9]{1}$/},PK:{name:"Pakistan",regex:/^PK[0-9]{2}[A-Z]{4}[A-Z0-9]{16}$/},PL:{name:"Poland",regex:/^PL[0-9]{2}[0-9]{8}[0-9]{16}$/},PS:{name:"Palestinian Territory, Occupied",regex:/^PS[0-9]{2}[A-Z]{4}[A-Z0-9]{21}$/},PT:{name:"Portugal",regex:/^PT[0-9]{2}[0-9]{4}[0-9]{4}[0-9]{11}[0-9]{2}$/},QA:{name:"Qatar",regex:/^QA[0-9]{2}[A-Z]{4}[A-Z0-9]{21}$/},RO:{name:"Romania",regex:/^RO[0-9]{2}[A-Z]{4}[A-Z0-9]{16}$/},SM:{name:"San Marino",regex:/^SM[0-9]{2}[A-Z]{1}[0-9]{5}[0-9]{5}[A-Z0-9]{12}$/},SA:{name:"Saudi Arabia",regex:/^SA[0-9]{2}[0-9]{2}[A-Z0-9]{18}$/},RS:{name:"Serbia",regex:/^RS[0-9]{2}[0-9]{3}[0-9]{13}[0-9]{2}$/},SK:{name:"Slovak Republic",regex:/^SK[0-9]{2}[0-9]{4}[0-9]{6}[0-9]{10}$/},SI:{name:"Slovenia",regex:/^SI[0-9]{2}[0-9]{5}[0-9]{8}[0-9]{2}$/},ES:{name:"Spain",regex:/^ES[0-9]{2}[0-9]{4}[0-9]{4}[0-9]{1}[0-9]{1}[0-9]{10}$/},SE:{name:"Sweden",regex:/^SE[0-9]{2}[0-9]{3}[0-9]{16}[0-9]{1}$/},CH:{name:"Switzerland",regex:/^CH[0-9]{2}[0-9]{5}[A-Z0-9]{12}$/},TL:{name:"Timor-Leste",regex:/^TL[0-9]{2}[0-9]{3}[0-9]{14}[0-9]{2}$/},TN:{name:"Tunisia",regex:/^TN[0-9]{2}[0-9]{2}[0-9]{3}[0-9]{13}[0-9]{2}$/},TR:{name:"Turkey",regex:/^TR[0-9]{2}[0-9]{5}[A-Z0-9]{1}[A-Z0-9]{16}$/},AE:{name:"United Arab Emirates",regex:/^AE[0-9]{2}[0-9]{3}[0-9]{16}$/},GB:{name:"United Kingdom",regex:/^GB[0-9]{2}[A-Z]{4}[0-9]{6}[0-9]{8}$/},VG:{name:"Virgin Islands, British",regex:/^VG[0-9]{2}[A-Z]{4}[0-9]{16}$/}}).directive("ngIban",["ngIbanCountries",function(b){return{restrict:"A",require:"ngModel",link:function(c,d,e,f){var g,h;return h=function(a){return null!=a?a.toUpperCase().replace(/\s/g,""):void 0},g=function(c){var d,f,g,i,j;if(!e.required&&!c)return!0;if(d="A".charCodeAt(0),f="Z".charCodeAt(0),i=h(c),!(""===e.ngIban||e.ngIban in b&&b[e.ngIban].regex.test(i)))return!1;for(i=i.substr(4)+i.substr(0,4),j=i.split("").map(function(a){var b;return b=a.charCodeAt(0),b>=d&&f>=b?b-d+10:a}).join("");j.length>2;)g=j.slice(0,9),j=a(parseInt(g,10),97)+j.slice(g.length);return 1===a(parseInt(j,10),97)},f.$parsers.unshift(function(a){var b,c;return null!=a?(c=g(a),f.$setValidity("iban",c),c?(b=h(a),b!==a&&(f.$setViewValue(b),f.$render()),b):void 0):void 0}),f.$formatters.unshift(function(a){var b,d;return null!=a?(d=g(a),f.$setValidity("iban",d),d?(b=h(a),b!==a&&(c[e.ngModel]=b),b):a):void 0})}}}])}).call(this);
 /*
  * angular-ui-bootstrap
  * http://angular-ui.github.io/bootstrap/
@@ -629,8 +627,7 @@ buckbrowser.service('CompanyService', function($http, $q, ErrorService) {
 						deferred.resolve(this.company);
 					}
 				}).error(function(data, status, headers, config){
-					alert('Error');
-					deferred.reject();
+					deferred.reject({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
 				});
 			}
 			return deferred.promise;
@@ -660,8 +657,7 @@ buckbrowser.service('CompanyService', function($http, $q, ErrorService) {
 						deferred.resolve(this.contacts);
 					}
 				}).error(function(data, status, headers, config){
-					alert('Error');
-					deferred.reject();
+					deferred.reject({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
 				});
 			}
 			return deferred.promise;
@@ -708,8 +704,7 @@ buckbrowser.service('CountryService', function($http, $q, ErrorService) {
 					deferred.resolve(data.result);
 				}
 			}).error(function(data, status, headers, config){
-				alert('Error');
-				deferred.reject();
+				deferred.reject({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
 			});
 			return deferred.promise;
 		},
@@ -739,15 +734,14 @@ buckbrowser.service('CountryService', function($http, $q, ErrorService) {
 						deferred.resolve(this.countries);
 					}
 				}).error(function(data, status, headers, config){
-					alert('Error');
-					deferred.reject();
+					deferred.reject({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
 				});
 			}
 			return deferred.promise;
 		}
 	}
 });
-buckbrowser.service('ErrorService', function() {
+buckbrowser.service('ErrorService', function($rootScope) {
 	return {
 		'handle': function(result) {
 			var errors = [];
@@ -758,6 +752,8 @@ buckbrowser.service('ErrorService', function() {
 						errors.push({type: 'warning', msg: 'Method invocation faulted'});
 						break;
 					case 36000:
+						$rootScope.loggedIn = false;
+						localStorage.clear();
 						errors.push({type: 'warning', msg: 'You are not logged in'});
 						break;
 					case 36001:
@@ -849,8 +845,7 @@ buckbrowser.service('UserService', function($http, ErrorService, $q) {
 						deferred.resolve(this.user);
 					}
 				}).error(function(data, status, headers, config){
-					alert('Error');
-					deferred.reject();
+					deferred.reject({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
 				});
 			}
 			return deferred.promise;
@@ -859,9 +854,10 @@ buckbrowser.service('UserService', function($http, ErrorService, $q) {
 			this.user = user;
 		},
 		'getCompanies': function() {
+			var deferred = $q.defer();
 			if (this.companies)
 			{
-				return this.companies;
+				deferred.resolve(this.companies);
 			}
 			else
 			{
@@ -871,16 +867,17 @@ buckbrowser.service('UserService', function($http, ErrorService, $q) {
 					if (errors.length > 0)
 					{
 						console.log(errors);
+						deferred.reject();
 					}
 					else
 					{
 						this.companies = data.result;
+						deferred.resolve(this.companies);
 					}
 				}).error(function(data, status, headers, config){
-					alert('Error');
+					deferred.reject({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
 				});
 			}
-
 		}
 	}
 });

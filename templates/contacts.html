@@ -82,6 +82,18 @@
 		          </select>
 		        </div>
 		      </div>
+		      <div class="form-group" ng-class="{'has-error': IBANError(this_contact.IBAN)}">
+		      	<label for="IBAN" class="col-sm-2 control-label">International Bank Account Number (IBAN)</label>
+		      	<div class="col-sm-10">
+	              <input ng-model="thisContact.IBAN" type="text" class="form-control" id="IBAN" name="IBAN" placeholder="NL01RABO0123456789" ng-iban>
+		      	</div>
+		      </div>
+		      <div class="form-group">
+		      	<label for="BIC" class="col-sm-2 control-label">Bank Identifier Code (BIC)</label>
+		      	<div class="col-sm-10">
+	              <input ng-model="thisContact.BIC" type="text" class="form-control" id="BIC" name="BIC" placeholder="RABONL2U">
+		      	</div>
+		      </div>
 		      <div class="form-group">
 		      	<label for="default_payment_term" class="col-sm-2 control-label">Default payment term</label>
 		      	<div class="col-sm-10">
@@ -171,6 +183,18 @@
 		            <option ng-repeat="country in countries" value="{{country.id}}">{{country.name}} ({{country.locale}})</option>
 		          </select>
 		        </div>
+		      </div>
+		      <div class="form-group" ng-class="{'has-error': IBANError(new_contact.IBAN)}">
+		      	<label for="IBAN" class="col-sm-2 control-label">International Bank Account Number (IBAN)</label>
+		      	<div class="col-sm-10">
+	              <input ng-model="newContact.IBAN" type="text" class="form-control" id="IBAN" name="IBAN" placeholder="NL01RABO0123456789" ng-iban>
+		      	</div>
+		      </div>
+		      <div class="form-group">
+		      	<label for="BIC" class="col-sm-2 control-label">Bank Identifier Code (BIC)</label>
+		      	<div class="col-sm-10">
+	              <input ng-model="newContact.BIC" type="text" class="form-control" id="BIC" name="BIC" placeholder="RABONL2U">
+		      	</div>
 		      </div>
 		      <div class="form-group">
 		      	<label for="default_payment_term" class="col-sm-2 control-label">Default payment term</label>

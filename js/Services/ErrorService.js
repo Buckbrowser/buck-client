@@ -1,4 +1,4 @@
-buckbrowser.service('ErrorService', function() {
+buckbrowser.service('ErrorService', function($rootScope) {
 	return {
 		'handle': function(result) {
 			var errors = [];
@@ -9,6 +9,8 @@ buckbrowser.service('ErrorService', function() {
 						errors.push({type: 'warning', msg: 'Method invocation faulted'});
 						break;
 					case 36000:
+						$rootScope.loggedIn = false;
+						localStorage.clear();
 						errors.push({type: 'warning', msg: 'You are not logged in'});
 						break;
 					case 36001:

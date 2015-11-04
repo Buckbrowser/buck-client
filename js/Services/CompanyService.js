@@ -24,8 +24,7 @@ buckbrowser.service('CompanyService', function($http, $q, ErrorService) {
 						deferred.resolve(this.company);
 					}
 				}).error(function(data, status, headers, config){
-					alert('Error');
-					deferred.reject();
+					deferred.reject({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
 				});
 			}
 			return deferred.promise;
@@ -55,8 +54,7 @@ buckbrowser.service('CompanyService', function($http, $q, ErrorService) {
 						deferred.resolve(this.contacts);
 					}
 				}).error(function(data, status, headers, config){
-					alert('Error');
-					deferred.reject();
+					deferred.reject({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
 				});
 			}
 			return deferred.promise;

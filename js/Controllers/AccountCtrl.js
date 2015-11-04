@@ -13,25 +13,9 @@ buckbrowser.controller('AccountCtrl', function($scope, $http, ErrorService, User
 	});
 
 	$scope.companies = [];
-	$http.jsonrpc(api, 'User.get_all_companies', {token: localStorage.buckbrowserToken})
-	.success(function(data, status, headers, config){
-		var errors = ErrorService.handle(data.result);
-		if (errors.length > 0)
-		{
-			$scope.alerts = errors;
-		}
-		else
-		{
-			console.log(data.result);
-			for (var comp in data.result)
-			{
-				$scope.companies.push(data.result[comp]);
-			}
-			console.log($scope.companies);
-		}
-	}).error(function(data, status, headers, config){
-		alert('Error');
-	});
+	UserService.get_all_companies.then(function(companies) {
+		$scope.companies = companies;
+	}).then(function(errors) { $scope.alerts.push(errors); });
 
 	$scope.updateInfo = function() {
 		var parameters = angular.copy($scope.userUpdate);
@@ -50,7 +34,7 @@ buckbrowser.controller('AccountCtrl', function($scope, $http, ErrorService, User
 				$scope.alerts.push({type: 'success', msg: 'Info updated succesfully'});
 			}
 		}).error(function(data, status, headers, config){
-			alert('Error');
+			$scope.alerts.push({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
 		});
 	};
 
@@ -69,7 +53,7 @@ buckbrowser.controller('AccountCtrl', function($scope, $http, ErrorService, User
 				$scope.alerts.push({type: 'success', msg: 'Logged in to other company'});
 			}
 		}).error(function(data, status, headers, config){
-			alert('Error');
+			$scope.alerts.push({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
 		});
 	};
 
@@ -86,7 +70,7 @@ buckbrowser.controller('AccountCtrl', function($scope, $http, ErrorService, User
 				$scope.alerts.push = {type: 'success', msg: 'You will recieve an email about deleting your account shortly.'};
 			}
 		}).error(function(data, status, headers, config){
-			alert('Error');
+			$scope.alerts.push({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
 		});
 	};
 

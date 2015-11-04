@@ -29,6 +29,14 @@
 	  				<td>{{company.email}}</td>
 	  			</tr>
 	  			<tr>
+	  				<td>International Bank Account Number (IBAN)</td>
+	  				<td>{{company.IBAN}}</td>
+	  			</tr>
+	  			<tr>
+	  				<td>Bank Identifier Code (BIC)</td>
+	  				<td>{{company.BIC}}</td>
+	  			</tr>
+	  			<tr>
 	  				<td>Tax number</td>
 	  				<td>{{company.tax_number | nullDisplay}}</td>
 	  			</tr>
@@ -95,6 +103,18 @@
 		          <p class="help-block" ng-show="update.email.$error.required && update.email.$dirty">This field is required.</p>
 	         	  <p class="help-block" ng-show="update.email.$error.email && update.email.$dirty">This field has to be a correct email address.</p>
 		        </div>
+		      </div>
+		      <div class="form-group" ng-class="{'has-error': IBANError(update.IBAN)}">
+		      	<label for="IBAN" class="col-sm-2 control-label">International Bank Account Number (IBAN)</label>
+		      	<div class="col-sm-10">
+	              <input ng-model="companyUpdate.IBAN" type="text" class="form-control" id="IBAN" name="IBAN" placeholder="NL01RABO0123456789" ng-iban>
+		      	</div>
+		      </div>
+		      <div class="form-group">
+		      	<label for="BIC" class="col-sm-2 control-label">Bank Identifier Code (BIC)</label>
+		      	<div class="col-sm-10">
+	              <input ng-model="companyUpdate.BIC" type="text" class="form-control" id="BIC" name="BIC" placeholder="RABONL2U">
+		      	</div>
 		      </div>
 		      <div class="form-group">
 		      	<label for="tax_number" class="col-sm-2 control-label">Tax number</label>

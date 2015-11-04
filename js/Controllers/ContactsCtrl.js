@@ -149,6 +149,10 @@ buckbrowser.controller('ContactsCtrl', function($scope, $rootScope, $http, Compa
 		$scope.updateClick = false;
 	};
 
+	$scope.IBANError = function(value) {
+		return value.$dirty && typeof value.$modelValue === 'undefined';
+	};
+
 	$scope.closeAlert = function(index) {
 		$scope.alerts.splice(index, 1);
 	};

@@ -22,8 +22,7 @@ buckbrowser.service('UserService', function($http, ErrorService, $q) {
 						deferred.resolve(this.user);
 					}
 				}).error(function(data, status, headers, config){
-					alert('Error');
-					deferred.reject();
+					deferred.reject({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
 				});
 			}
 			return deferred.promise;
@@ -32,9 +31,10 @@ buckbrowser.service('UserService', function($http, ErrorService, $q) {
 			this.user = user;
 		},
 		'getCompanies': function() {
+			var deferred = $q.defer();
 			if (this.companies)
 			{
-				return this.companies;
+				deferred.resolve(this.companies);
 			}
 			else
 			{
@@ -44,16 +44,17 @@ buckbrowser.service('UserService', function($http, ErrorService, $q) {
 					if (errors.length > 0)
 					{
 						console.log(errors);
+						deferred.reject();
 					}
 					else
 					{
 						this.companies = data.result;
+						deferred.resolve(this.companies);
 					}
 				}).error(function(data, status, headers, config){
-					alert('Error');
+					deferred.reject({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
 				});
 			}
-
 		}
 	}
 });
