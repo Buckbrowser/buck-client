@@ -15,13 +15,13 @@ buckbrowser.controller('CompanyCtrl', function($scope, $http, CompanyService, Co
 			});
 		}
 	},function(errors) {
-		if (errors) $scope.alerts.push(errors);
+		if (errors) $scope.alerts = $scope.alerts.concat(errors);
 	});
 	$scope.countries = {};
 	CountryService.get_all().then(function(countries) {
 		$scope.countries=countries;
 	},function(errors) {
-		if (errors) $scope.alerts.push(errors);
+		if (errors) $scope.alerts = $scope.alerts.concat(errors);
 	});
 
 	$scope.updateInfo = function() {
@@ -30,11 +30,11 @@ buckbrowser.controller('CompanyCtrl', function($scope, $http, CompanyService, Co
 			CountryService.get($scope.company.id_country).then(function(country) { // update the country (instead of country_id) in controller
 				$scope.company.country = country;
 			},function(errors) {
-				if (errors) $scope.alerts.push(errors);
+				if (errors) $scope.alerts = $scope.alerts.concat(errors);
 			});
 			$scope.alerts.push({type: 'success', msg: 'Info updated succesfully'});
 		},function(errors) {
-			if (errors) $scope.alerts.push(errors);
+			if (errors) $scope.alerts = $scope.alerts.concat(errors);
 		});
 	};
 
@@ -42,7 +42,7 @@ buckbrowser.controller('CompanyCtrl', function($scope, $http, CompanyService, Co
 		CompanyService.del().then(function() {
 			$scope.alerts.push({type: 'info', msg: 'An email has been send to '+$scope.company.email+'. Please follow the instructions in that email to confirm deleting your account.'});
 		},function(errors) {
-			if (errors) $scope.alerts.push(errors);
+			if (errors) $scope.alerts = $scope.alerts.concat(errors);
 		});
 	};
 

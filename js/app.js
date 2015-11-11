@@ -125,34 +125,36 @@ buckbrowser.controller('AccountCtrl', function($scope, $http, ErrorService, User
 		$scope.user = user;
 		$scope.userUpdate = angular.copy(user);
 	},function(errors) {
-		if (errors) $scope.alerts.push(errors);
+		if (errors) $scope.alerts = $scope.alerts.concat(errors);
 	});
 	$scope.countries = {};
 	CountryService.get_all().then(function(countries) {
 		$scope.countries=countries;
 	},function(errors) {
-		if (errors) $scope.alerts.push(errors);
+		if (errors) $scope.alerts = $scope.alerts.concat(errors);
 	});
 
 	$scope.companies = [];
 	UserService.get_all_companies().then(function(companies) {
 		$scope.companies = companies;
-	},function(errors) { if (error) $scope.alerts.push(errors); });
+	},function(errors) {
+		if (errors) $scope.alerts = $scope.alerts.concat(errors);
+	});
 
 	$scope.updateInfo = function() {
 		UserService.update($scope.userUpdate).then(function() {
 			$scope.user = angular.copy($scope.userUpdate);
 			$scope.alerts.push({type: 'success', msg: 'Info updated succesfully'});
 		},function(errors) {
-			if (errors) $scope.alerts.push(errors);
+			if (errors) $scope.alerts = $scope.alerts.concat(errors);
 		});
 	};
 
 	$scope.switchToCompany = function(company_id) {
-		UserService.switch_to_company(company_id).then(function() {
+		UserService.switch_to_company(company_id).then(function(a) {
 			$scope.alerts.push({type: 'success', msg: 'Logged in to other company'});
 		},function(errors) {
-			if (errors) $scope.alerts.push(errors);
+			if (errors) $scope.alerts = $scope.alerts.concat(errors);
 		});
 	};
 
@@ -160,7 +162,7 @@ buckbrowser.controller('AccountCtrl', function($scope, $http, ErrorService, User
 		UserService.del().then(function() {
 			$scope.alerts.push = {type: 'success', msg: 'You will recieve an email about deleting your account shortly.'};
 		},function(errors) {
-			if (errors) $scope.alerts.push(errors);
+			if (errors) $scope.alerts = $scope.alerts.concat(errors);
 		});
 	};
 
@@ -185,13 +187,13 @@ buckbrowser.controller('CompanyCtrl', function($scope, $http, CompanyService, Co
 			});
 		}
 	},function(errors) {
-		if (errors) $scope.alerts.push(errors);
+		if (errors) $scope.alerts = $scope.alerts.concat(errors);
 	});
 	$scope.countries = {};
 	CountryService.get_all().then(function(countries) {
 		$scope.countries=countries;
 	},function(errors) {
-		if (errors) $scope.alerts.push(errors);
+		if (errors) $scope.alerts = $scope.alerts.concat(errors);
 	});
 
 	$scope.updateInfo = function() {
@@ -200,11 +202,11 @@ buckbrowser.controller('CompanyCtrl', function($scope, $http, CompanyService, Co
 			CountryService.get($scope.company.id_country).then(function(country) { // update the country (instead of country_id) in controller
 				$scope.company.country = country;
 			},function(errors) {
-				if (errors) $scope.alerts.push(errors);
+				if (errors) $scope.alerts = $scope.alerts.concat(errors);
 			});
 			$scope.alerts.push({type: 'success', msg: 'Info updated succesfully'});
 		},function(errors) {
-			if (errors) $scope.alerts.push(errors);
+			if (errors) $scope.alerts = $scope.alerts.concat(errors);
 		});
 	};
 
@@ -212,7 +214,7 @@ buckbrowser.controller('CompanyCtrl', function($scope, $http, CompanyService, Co
 		CompanyService.del().then(function() {
 			$scope.alerts.push({type: 'info', msg: 'An email has been send to '+$scope.company.email+'. Please follow the instructions in that email to confirm deleting your account.'});
 		},function(errors) {
-			if (errors) $scope.alerts.push(errors);
+			if (errors) $scope.alerts = $scope.alerts.concat(errors);
 		});
 	};
 
@@ -224,7 +226,11 @@ buckbrowser.controller('CompanyCtrl', function($scope, $http, CompanyService, Co
 		$scope.alerts.splice(index, 1);
 	};
 });
-buckbrowser.controller('ContactCtrl', function($scope) {});
+buckbrowser.controller('ContactCtrl', function($scope) {
+	$scope.send = function() {
+		// rare API dingen 
+	}
+});
 buckbrowser.controller('ContactsCtrl', function($scope, $rootScope, $http, CompanyService, CountryService, ErrorService, ContactService) {
 	$scope.alerts = [];
 
@@ -272,7 +278,7 @@ buckbrowser.controller('ContactsCtrl', function($scope, $rootScope, $http, Compa
 				$scope.allContacts = false;
 				$scope.updateClick = true;
 			},function(errors) {
-				if (errors) $scope.alerts.push(errors);
+				if (errors) $scope.alerts = $scope.alerts.concat(errors);
 			});
 		}
 	};
@@ -284,12 +290,12 @@ buckbrowser.controller('ContactsCtrl', function($scope, $rootScope, $http, Compa
 			CompanyService.get_all_contacts().then(function(contacts) {
 				$scope.contacts = contacts;
 			},function(errors) {
-				if (errors) $scope.alerts.push(errors);
+				if (errors) $scope.alerts = $scope.alerts.concat(errors);
 			});
 			$scope.thisContact = {};
 			$scope.alerts.push({type: 'success', msg: this_contact.company+' updated successfully'});
 		},function(errors) {
-			if (errors) $scope.alerts.push(errors);
+			if (errors) $scope.alerts = $scope.alerts.concat(errors);
 		});
 	};
 
@@ -303,7 +309,7 @@ buckbrowser.controller('ContactsCtrl', function($scope, $rootScope, $http, Compa
 			$scope.alerts.push({type: 'success', msg: 'Contact created successfully'});
 			form.$setPristine();
 		},function(errors) {
-			if (errors) $scope.alerts.push(errors);
+			if (errors) $scope.alerts = $scope.alerts.concat(errors);
 		});
 	};
 
@@ -320,7 +326,7 @@ buckbrowser.controller('ContactsCtrl', function($scope, $rootScope, $http, Compa
 				});
 				$scope.alerts.push({type: 'success', msg: 'Contact deleted succesfully'});
 			},function(errors) {
-				if (errors) $scope.alerts.push(errors);
+				if (errors) $scope.alerts = $scope.alerts.concat(errors);
 			});
 		}
 	};
@@ -832,7 +838,8 @@ buckbrowser.service('ErrorService', function($rootScope) {
 					{
 						msg += exists[i]+", ";
 					}
-					errors.push({type: 'warning', msg: 'The following fields already exist and have to be unique: '+msg.substr(0,msg.length-2)});
+					msg.substring(0,msg.length-2);
+					errors.push({type: 'warning', msg: 'The following fields already exist and have to be unique: '+msg.substring(0,msg.length-2)});
 				}
 				if (result.create_error.empty_fields)
 				{
@@ -842,7 +849,7 @@ buckbrowser.service('ErrorService', function($rootScope) {
 					{
 						msg += empty[i]+", ";
 					}
-					errors.push({type: 'warning', msg: 'The following fields are required: '+msg.substr(0,msg.length-1)});
+					errors.push({type: 'warning', msg: 'The following fields are required: '+msg.substring(0,msg.length-2)});
 				}
 				if (result.create_error.incorrect_fields)
 				{
@@ -852,7 +859,7 @@ buckbrowser.service('ErrorService', function($rootScope) {
 					{
 						msg += incorrect[i]+", ";
 					}
-					errors.push({type: 'warning', msg: 'The following fields are incorrect: '+msg.substr(0,msg.length-1)});
+					errors.push({type: 'warning', msg: 'The following fields are incorrect: '+msg.substring(0,msg.length-2)});
 				}
 			}
 			if (result.update_error) {
@@ -862,7 +869,7 @@ buckbrowser.service('ErrorService', function($rootScope) {
 				{
 					msg += incorrect[i]+", ";
 				}
-				errors.push({type: 'warning', msg: 'The following fields are incorrect: '+msg.substr(0,msg.length-1)});
+				errors.push({type: 'warning', msg: 'The following fields are incorrect: '+msg.substring(0,msg.length-2)});
 			}
 			return errors;
 		}
@@ -942,6 +949,7 @@ buckbrowser.service('UserService', function($http, ErrorService, $q) {
 				var errors = ErrorService.handle(data.result);
 				if (errors.length > 0)
 				{
+					console.log(errors);
 					deferred.reject(errors);
 				}
 				else
@@ -953,6 +961,7 @@ buckbrowser.service('UserService', function($http, ErrorService, $q) {
 			}).error(function(data, status, headers, config){
 				deferred.reject({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
 			});
+			return deferred.promise;
 		},
 		'get_all_companies': function() {
 			var deferred = $q.defer();

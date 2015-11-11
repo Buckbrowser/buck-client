@@ -42,7 +42,8 @@ buckbrowser.service('ErrorService', function($rootScope) {
 					{
 						msg += exists[i]+", ";
 					}
-					errors.push({type: 'warning', msg: 'The following fields already exist and have to be unique: '+msg.substr(0,msg.length-2)});
+					msg.substring(0,msg.length-2);
+					errors.push({type: 'warning', msg: 'The following fields already exist and have to be unique: '+msg.substring(0,msg.length-2)});
 				}
 				if (result.create_error.empty_fields)
 				{
@@ -52,7 +53,7 @@ buckbrowser.service('ErrorService', function($rootScope) {
 					{
 						msg += empty[i]+", ";
 					}
-					errors.push({type: 'warning', msg: 'The following fields are required: '+msg.substr(0,msg.length-1)});
+					errors.push({type: 'warning', msg: 'The following fields are required: '+msg.substring(0,msg.length-2)});
 				}
 				if (result.create_error.incorrect_fields)
 				{
@@ -62,7 +63,7 @@ buckbrowser.service('ErrorService', function($rootScope) {
 					{
 						msg += incorrect[i]+", ";
 					}
-					errors.push({type: 'warning', msg: 'The following fields are incorrect: '+msg.substr(0,msg.length-1)});
+					errors.push({type: 'warning', msg: 'The following fields are incorrect: '+msg.substring(0,msg.length-2)});
 				}
 			}
 			if (result.update_error) {
@@ -72,7 +73,7 @@ buckbrowser.service('ErrorService', function($rootScope) {
 				{
 					msg += incorrect[i]+", ";
 				}
-				errors.push({type: 'warning', msg: 'The following fields are incorrect: '+msg.substr(0,msg.length-1)});
+				errors.push({type: 'warning', msg: 'The following fields are incorrect: '+msg.substring(0,msg.length-2)});
 			}
 			return errors;
 		}

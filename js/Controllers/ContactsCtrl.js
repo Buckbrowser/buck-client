@@ -45,7 +45,7 @@ buckbrowser.controller('ContactsCtrl', function($scope, $rootScope, $http, Compa
 				$scope.allContacts = false;
 				$scope.updateClick = true;
 			},function(errors) {
-				if (errors) $scope.alerts.push(errors);
+				if (errors) $scope.alerts = $scope.alerts.concat(errors);
 			});
 		}
 	};
@@ -57,12 +57,12 @@ buckbrowser.controller('ContactsCtrl', function($scope, $rootScope, $http, Compa
 			CompanyService.get_all_contacts().then(function(contacts) {
 				$scope.contacts = contacts;
 			},function(errors) {
-				if (errors) $scope.alerts.push(errors);
+				if (errors) $scope.alerts = $scope.alerts.concat(errors);
 			});
 			$scope.thisContact = {};
 			$scope.alerts.push({type: 'success', msg: this_contact.company+' updated successfully'});
 		},function(errors) {
-			if (errors) $scope.alerts.push(errors);
+			if (errors) $scope.alerts = $scope.alerts.concat(errors);
 		});
 	};
 
@@ -76,7 +76,7 @@ buckbrowser.controller('ContactsCtrl', function($scope, $rootScope, $http, Compa
 			$scope.alerts.push({type: 'success', msg: 'Contact created successfully'});
 			form.$setPristine();
 		},function(errors) {
-			if (errors) $scope.alerts.push(errors);
+			if (errors) $scope.alerts = $scope.alerts.concat(errors);
 		});
 	};
 
@@ -93,7 +93,7 @@ buckbrowser.controller('ContactsCtrl', function($scope, $rootScope, $http, Compa
 				});
 				$scope.alerts.push({type: 'success', msg: 'Contact deleted succesfully'});
 			},function(errors) {
-				if (errors) $scope.alerts.push(errors);
+				if (errors) $scope.alerts = $scope.alerts.concat(errors);
 			});
 		}
 	};

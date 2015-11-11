@@ -72,6 +72,7 @@ buckbrowser.service('UserService', function($http, ErrorService, $q) {
 				var errors = ErrorService.handle(data.result);
 				if (errors.length > 0)
 				{
+					console.log(errors);
 					deferred.reject(errors);
 				}
 				else
@@ -83,6 +84,7 @@ buckbrowser.service('UserService', function($http, ErrorService, $q) {
 			}).error(function(data, status, headers, config){
 				deferred.reject({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
 			});
+			return deferred.promise;
 		},
 		'get_all_companies': function() {
 			var deferred = $q.defer();
