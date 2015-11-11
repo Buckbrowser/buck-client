@@ -507,6 +507,8 @@ buckbrowser.controller('NavbarCtrl', function($scope, $rootScope, $modal, $route
 	};
 });
 buckbrowser.controller('RegisterCtrl', function($scope, $rootScope, $http, $location, $modal, $modalInstance, ErrorService, UserService, CountryService) {
+	$scope.alerts = [];
+
 	$scope.user = {};
 
 	$scope.register = true;
@@ -532,7 +534,7 @@ buckbrowser.controller('RegisterCtrl', function($scope, $rootScope, $http, $loca
 				$scope.newCompany = true;
 			}
 		}).error(function(data, status, headers, config){
-			alert('Error');
+			$scope.alerts.push({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'})
 		});
 	};
 
@@ -550,15 +552,12 @@ buckbrowser.controller('RegisterCtrl', function($scope, $rootScope, $http, $loca
 			}
 			else
 			{
-				// something with company service
-				//$rootScope.company = $scope.company;
-				//$rootScope.company.id = data.result.id;
 				$scope.newCompany = false;
 				$scope.success = true;
 			}
 		})
 		.error(function(data, status, headers, config){
-			alert('Error');
+			$scope.alerts.push({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'})
 		});
 	};
 
