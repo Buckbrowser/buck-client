@@ -14,9 +14,7 @@ buckbrowser.service('CompanyService', function($http, $q, ErrorService) {
 					var errors = ErrorService.handle(data.result);
 					if (errors.length > 0)
 					{
-						console.log('hoi');
-						console.log(errors);
-						deferred.reject();
+						deferred.reject(errors);
 					}
 					else
 					{
@@ -30,7 +28,43 @@ buckbrowser.service('CompanyService', function($http, $q, ErrorService) {
 			return deferred.promise;
 		},
 		'update': function(company) {
-			this.company = company;
+			var deferred = $q.defer();
+			var parameters = angular.copy(company);
+			parameters.token = localStorage.buckbrowserToken;
+			$http.jsonrpc(api, 'Company.update', parameters)
+			.success(function(data, status, headers, config){
+				var errors = ErrorService.handle(data.result);
+				if (errors.length > 0)
+				{
+					deferred.reject(errors);
+				}
+				else
+				{
+					this.company = company;
+					deferred.resolve();
+				}
+			}).error(function(data, status, headers, config){
+				deferred.reject({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
+			});
+			return deferred.promise;
+		},
+		'del': function() {
+			var deferred = $q.defer();
+			$http.jsonrpc(api, 'Company.delete', {token: localStorage.buckbrowserToken, url: delete_company_url})
+			.success(function(data, status, headers, config){
+				var errors = ErrorService.handle(data.result);
+				if (errors.length > 0)
+				{
+					deferred.reject(errors);
+				}
+				else
+				{
+					deferred.resolve();
+				}
+			}).error(function(data, status, headers, config){
+				deferred.reject({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
+			});
+			return deferred.promise;
 		},
 		'get_all_contacts': function() {
 			var deferred = $q.defer();
@@ -45,8 +79,7 @@ buckbrowser.service('CompanyService', function($http, $q, ErrorService) {
 					var errors = ErrorService.handle(data.result);
 					if (errors.length>0)
 					{
-						console.log(errors);
-						deferred.reject();
+						deferred.reject(errors);
 					}
 					else
 					{
@@ -58,6 +91,9 @@ buckbrowser.service('CompanyService', function($http, $q, ErrorService) {
 				});
 			}
 			return deferred.promise;
+		},
+		'set_company': function(company) {
+			this.company = company;
 		},
 		'add_contact': function(contact) {
 			this.contacts.push(contact);

@@ -18,9 +18,6 @@
         <p class="help-block" ng-show="userAuthenticate.password.$error.required && userAuthenticate.password.$dirty">This field is required.</p>
       </div>
     </div>
-    <div class="form-group has-error" ng-show="invalidLoginCredentials">
-        <p class="help-block col-sm-12">Invalid login credentials</p>
-    </div>
   </div>
   <div class="modal-footer">
     <button type="submit" class="btn btn-primary" ng-click="userAuthenticate.$valid && authenticate()">Login</button>

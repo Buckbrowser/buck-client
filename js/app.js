@@ -85,9 +85,10 @@ buckbrowser.run(function($rootScope, $http, $location, CompanyService) {
 			}
 			if (next.access.requiresCompany)
 			{
-				CompanyService.get().then(function(company)
-				{ /* company found, do nothing */},function(company)
-				{ $location.path("/home"); });
+				CompanyService.get().then(function() {
+				},function() {
+					$location.path("/home");
+				});
 			}
 		}
 	});
@@ -123,71 +124,43 @@ buckbrowser.controller('AccountCtrl', function($scope, $http, ErrorService, User
 	UserService.get().then(function(user) {
 		$scope.user = user;
 		$scope.userUpdate = angular.copy(user);
+	},function(errors) {
+		if (errors) $scope.alerts.push(errors);
 	});
 	$scope.countries = {};
 	CountryService.get_all().then(function(countries) {
 		$scope.countries=countries;
+	},function(errors) {
+		if (errors) $scope.alerts.push(errors);
 	});
 
 	$scope.companies = [];
-	UserService.get_all_companies.then(function(companies) {
+	UserService.get_all_companies().then(function(companies) {
 		$scope.companies = companies;
-	}).then(function(errors) { $scope.alerts.push(errors); });
+	},function(errors) { if (error) $scope.alerts.push(errors); });
 
 	$scope.updateInfo = function() {
-		var parameters = angular.copy($scope.userUpdate);
-		parameters.token = localStorage.buckbrowserToken;
-		$http.jsonrpc(api, 'User.update', parameters)
-		.success(function(data, status, headers, config){
-			var errors = ErrorService.handle(data.result);
-			if (errors.length > 0)
-			{
-				$scope.alerts = errors;
-			}
-			else
-			{
-				$scope.user = angular.copy($scope.userUpdate);
-				UserService.update($scope.user);
-				$scope.alerts.push({type: 'success', msg: 'Info updated succesfully'});
-			}
-		}).error(function(data, status, headers, config){
-			$scope.alerts.push({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
+		UserService.update($scope.userUpdate).then(function() {
+			$scope.user = angular.copy($scope.userUpdate);
+			$scope.alerts.push({type: 'success', msg: 'Info updated succesfully'});
+		},function(errors) {
+			if (errors) $scope.alerts.push(errors);
 		});
 	};
 
 	$scope.switchToCompany = function(company_id) {
-		$http.jsonrpc(api, 'User.switch_company', {token: localStorage.buckbrowserToken, company_id: company_id})
-		.success(function(data, status, headers, config){
-			var errors = ErrorService.handle(data.result);
-			if (errors.length > 0)
-			{
-				$scope.alerts = errors;
-			}
-			else
-			{
-				localStorage.buckbrowserToken = data.result.token;
-				CompanyService.update();
-				$scope.alerts.push({type: 'success', msg: 'Logged in to other company'});
-			}
-		}).error(function(data, status, headers, config){
-			$scope.alerts.push({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
+		UserService.switch_to_company(company_id).then(function() {
+			$scope.alerts.push({type: 'success', msg: 'Logged in to other company'});
+		},function(errors) {
+			if (errors) $scope.alerts.push(errors);
 		});
 	};
 
 	$scope.delete = function() {
-		$http.jsonrpc(api, 'User.delete', {token: localStorage.buckbrowserToken})
-		.success(function(data, status, headers, config){
-			var errors = ErrorService.handle(data.result);
-			if (errors.length > 0)
-			{
-				$scope.alerts = errors;
-			}
-			else
-			{
-				$scope.alerts.push = {type: 'success', msg: 'You will recieve an email about deleting your account shortly.'};
-			}
-		}).error(function(data, status, headers, config){
-			$scope.alerts.push({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
+		UserService.del().then(function() {
+			$scope.alerts.push = {type: 'success', msg: 'You will recieve an email about deleting your account shortly.'};
+		},function(errors) {
+			if (errors) $scope.alerts.push(errors);
 		});
 	};
 
@@ -205,54 +178,41 @@ buckbrowser.controller('CompanyCtrl', function($scope, $http, CompanyService, Co
 		$scope.companyUpdate = angular.copy($scope.company);
 		if (company.id_country != null)
 		{
-			CountryService.get(company.id_country)
-			.then(function(country) { $scope.company.country = country; })
-			.then(function(errors) { $scope.alerts.push(errors) });
+			CountryService.get(company.id_country).then(function(country) {
+				$scope.company.country = country;
+			},function(errors) {
+				$scope.alerts.push(errors)
+			});
 		}
-	}).then(function(errors) { $scope.alerts.push(errors); });
+	},function(errors) {
+		if (errors) $scope.alerts.push(errors);
+	});
 	$scope.countries = {};
 	CountryService.get_all().then(function(countries) {
 		$scope.countries=countries;
-	}).then(function(errors) { $scope.alerts.push(errors); });
+	},function(errors) {
+		if (errors) $scope.alerts.push(errors);
+	});
 
 	$scope.updateInfo = function() {
-		var parameters = angular.copy($scope.companyUpdate);
-		parameters.token = localStorage.buckbrowserToken;
-		$http.jsonrpc(api, 'Company.update', parameters)
-		.success(function(data, status, headers, config){
-			var errors = ErrorService.handle(data.result);
-			if (errors.length > 0)
-			{
-				$scope.alerts = errors;
-			}
-			else
-			{
-				$scope.company = angular.copy($scope.companyUpdate);
-				CompanyService.update($scope.company);
-				CountryService.get($scope.companyUpdate.id_country)
-				.then(function(country) { $scope.company.country = country; })
-				.then(function(errors) { $scope.alerts.push(errors); });
-				$scope.alerts.push({type: 'success', msg: 'Info updated succesfully'});
-			}
-		}).error(function(data, status, headers, config){
-			$scope.alerts.push({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
+		CompanyService.update($scope.companyUpdate).then(function() {
+			$scope.company = angular.copy($scope.companyUpdate); // update company in this controller
+			CountryService.get($scope.company.id_country).then(function(country) { // update the country (instead of country_id) in controller
+				$scope.company.country = country;
+			},function(errors) {
+				if (errors) $scope.alerts.push(errors);
+			});
+			$scope.alerts.push({type: 'success', msg: 'Info updated succesfully'});
+		},function(errors) {
+			if (errors) $scope.alerts.push(errors);
 		});
 	};
 
 	$scope.delete = function() {
-		$http.jsonrpc(api, 'Company.delete', {token: localStorage.buckbrowserToken, url: delete_company_url})
-		.success(function(data, status, headers, config){
-			var errors = ErrorService.handle(data.result);
-			if (errors.length > 0)
-			{
-				$scope.alerts = errors;
-			}
-			else
-			{
-				$scope.alerts.push({type: 'info', msg: 'An email has been send to '+$scope.company.email+'. Please follow the instructions in that email to confirm deleting your account.'});
-			}
-		}).error(function(data, status, headers, config){
-			$scope.alerts.push({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
+		CompanyService.del().then(function() {
+			$scope.alerts.push({type: 'info', msg: 'An email has been send to '+$scope.company.email+'. Please follow the instructions in that email to confirm deleting your account.'});
+		},function(errors) {
+			if (errors) $scope.alerts.push(errors);
 		});
 	};
 
@@ -265,7 +225,7 @@ buckbrowser.controller('CompanyCtrl', function($scope, $http, CompanyService, Co
 	};
 });
 buckbrowser.controller('ContactCtrl', function($scope) {});
-buckbrowser.controller('ContactsCtrl', function($scope, $rootScope, $http, CompanyService, CountryService, ErrorService) {
+buckbrowser.controller('ContactsCtrl', function($scope, $rootScope, $http, CompanyService, CountryService, ErrorService, ContactService) {
 	$scope.alerts = [];
 
 	$scope.contacts = [];
@@ -306,71 +266,44 @@ buckbrowser.controller('ContactsCtrl', function($scope, $rootScope, $http, Compa
 		}
 		if (!already_read)
 		{
-			$http.jsonrpc(api, 'Contact.read', {token: localStorage.buckbrowserToken, id: id})
-			.success(function(data, status, headers, config){
-				if (data.result.error)
-				{
-					console.log(data);
-					alert('Error, logged in console');
-				}
-				else
-				{
-					$scope.thisContact = data.result;
-					$scope.thisContact.id = id;
-					$scope.allContacts = false;
-					$scope.updateClick = true;
-				}
-			}).error(function(data, status, headers, config){
-				alert('Error');
+			ContactService.read(id).then(function(contact) {
+				$scope.thisContact = contact;
+				$scope.thisContact.id = id;
+				$scope.allContacts = false;
+				$scope.updateClick = true;
+			},function(errors) {
+				if (errors) $scope.alerts.push(errors);
 			});
 		}
 	};
 
 	$scope.updateContact = function() {
-		var this_contact = angular.copy($scope.thisContact);
-		var parameters = angular.copy(this_contact);
-		parameters.token = localStorage.buckbrowserToken;
-		$http.jsonrpc(api, 'Contact.update', parameters)
-		.success(function(data, status, headers, config){
-			var errors = ErrorService.handle(data.result);
-			if (errors.length > 0)
-			{
-				$scope.alerts = errors;
-			}
-			else
-			{
-				CompanyService.update_contact(this_contact);
-				CompanyService.get_all_contacts().then(function(contacts) {	$scope.contacts = contacts;	});
-				$scope.thisContact = {};
-				$scope.alerts.push({type: 'success', msg: this_contact.company+' updated successfully'});
-			}
-		}).error(function(data, status, headers, config){
-			alert('Error');
+		ContactService.update($scope.thisContact).then(function() {
+			var this_contact = angular.copy($scope.thisContact);
+			CompanyService.update_contact(this_contact);
+			CompanyService.get_all_contacts().then(function(contacts) {
+				$scope.contacts = contacts;
+			},function(errors) {
+				if (errors) $scope.alerts.push(errors);
+			});
+			$scope.thisContact = {};
+			$scope.alerts.push({type: 'success', msg: this_contact.company+' updated successfully'});
+		},function(errors) {
+			if (errors) $scope.alerts.push(errors);
 		});
 	};
 
 	$scope.createNewContact = function(form) {
-		var new_contact = angular.copy($scope.newContact);
-		var parameters = angular.copy(new_contact);
-		parameters.token = localStorage.buckbrowserToken;
-		$http.jsonrpc(api, 'Contact.create', parameters)
-		.success(function(data, status, headers, config){
-			var errors = ErrorService.handle(data.result);
-			if (errors.length > 0)
-			{
-				$scope.alerts = errors;
-			}
-			else
-			{
-				new_contact.id = data.result.id;
-				CompanyService.add_contact(new_contact);
-				$scope.contacts.push(new_contact);
-				$scope.newContact = {};
-				$scope.alerts.push({type: 'success', msg: 'Contact created successfully'});
-				form.$setPristine();
-			}
-		}).error(function(data, status, headers, config){
-			alert('Error');
+		ContactService.create($scope.newContact).then(function() {
+			var new_contact = angular.copy($scope.newContact);
+			new_contact.id = data.result.id;
+			CompanyService.add_contact(new_contact);
+			$scope.contacts.push(new_contact);
+			$scope.newContact = {};
+			$scope.alerts.push({type: 'success', msg: 'Contact created successfully'});
+			form.$setPristine();
+		},function(errors) {
+			if (errors) $scope.alerts.push(errors);
 		});
 	};
 
@@ -378,21 +311,16 @@ buckbrowser.controller('ContactsCtrl', function($scope, $rootScope, $http, Compa
 		var check = confirm("Are you sure you want to delete this contact?");
 		if (check)
 		{
-			$http.jsonrpc(api, 'Contact.delete', {token: localStorage.buckbrowserToken, id: contact})
-			.success(function(data, status, headers, config){
-				var errors = ErrorService.handle(data.result);
-				if (errors.length > 0)
-				{
-					$scope.alerts = errors;
-				}
-				else
-				{
-					CompanyService.delete_contact(contact);
-					CompanyService.get_all_contacts().then(function(contacts) {	$scope.contacts = contacts;	});
-					$scope.alerts.push({type: 'success', msg: 'Contact deleted succesfully'});
-				}
-			}).error(function(data, status, headers, config){
-				alert('Error');
+			ContactService.del(contact).then(function() {
+				CompanyService.delete_contact(contact);
+				CompanyService.get_all_contacts().then(function(contacts) {
+					$scope.contacts = contacts;
+				},function(errors) {
+					if (errors) $scope.alert.push(errors);
+				});
+				$scope.alerts.push({type: 'success', msg: 'Contact deleted succesfully'});
+			},function(errors) {
+				if (errors) $scope.alerts.push(errors);
 			});
 		}
 	};
@@ -438,44 +366,45 @@ buckbrowser.controller('DeleteCompanyCtrl', function($scope, $http, $routeParams
 			}
 			else
 			{
-				CompanyService.update(null);
+				CompanyService.set_company(null);
 				$scope.alerts.push({type: 'success', msg: 'Your company has been deleted succesfully'});
 			}
 		}).error(function(data, status, headers, config){
-			alert('Error');
+			$scope.alerts.push({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
 		});
 	};
 });
 buckbrowser.controller('HomeCtrl', function($scope) {});
-buckbrowser.controller('LoginCtrl', function($scope, $rootScope, $http, $modalInstance, $location, ErrorService, UserService) {
+buckbrowser.controller('LoginCtrl', function($scope, $rootScope, $http, $modalInstance, $location, ErrorService, UserService, CompanyService) {
+	$scope.alerts = [];
+
 	$scope.login = {};
-	$scope.invalidLoginCredentials = false;
 	$scope.authenticate = function() {
 		$http.jsonrpc(api, 'User.authenticate', $scope.login)
 		.success(function(data, status, headers, config){
-			if (data.result.error)
+			var errors = ErrorService.handle(data.result);
+			if (errors.length>0)
 			{
-				if (data.result.error == 36003)
-				{
-					$scope.invalidLoginCredentials = true;
-				}
-				else
-				{
-					console.log(data);
-					alert('Error: '+data.result.error);
-				}
+				$scope.alerts = errors;
 			}
 			else
 			{
+				if (data.result.company == -1)
+				{
+					CompanyService.set_company(null);
+				}
 				localStorage.buckbrowserToken = data.result.token;
 				$rootScope.loggedIn = true;
 				$modalInstance.close('Logged in');
 				$location.path('/account');
 			}
 		}).error(function(data, status, headers, config){
-			alert('Error');
-			console.log(data, status, headers, config);
+			$scope.alerts.push({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'})
 		});
+	};
+
+	$scope.closeAlert = function(index) {
+		$scope.alerts.splice(index, 1);
 	};
 });
 buckbrowser.controller('NavbarCtrl', function($scope, $rootScope, $modal, $route, $window) {
@@ -616,9 +545,7 @@ buckbrowser.service('CompanyService', function($http, $q, ErrorService) {
 					var errors = ErrorService.handle(data.result);
 					if (errors.length > 0)
 					{
-						console.log('hoi');
-						console.log(errors);
-						deferred.reject();
+						deferred.reject(errors);
 					}
 					else
 					{
@@ -632,7 +559,43 @@ buckbrowser.service('CompanyService', function($http, $q, ErrorService) {
 			return deferred.promise;
 		},
 		'update': function(company) {
-			this.company = company;
+			var deferred = $q.defer();
+			var parameters = angular.copy(company);
+			parameters.token = localStorage.buckbrowserToken;
+			$http.jsonrpc(api, 'Company.update', parameters)
+			.success(function(data, status, headers, config){
+				var errors = ErrorService.handle(data.result);
+				if (errors.length > 0)
+				{
+					deferred.reject(errors);
+				}
+				else
+				{
+					this.company = company;
+					deferred.resolve();
+				}
+			}).error(function(data, status, headers, config){
+				deferred.reject({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
+			});
+			return deferred.promise;
+		},
+		'del': function() {
+			var deferred = $q.defer();
+			$http.jsonrpc(api, 'Company.delete', {token: localStorage.buckbrowserToken, url: delete_company_url})
+			.success(function(data, status, headers, config){
+				var errors = ErrorService.handle(data.result);
+				if (errors.length > 0)
+				{
+					deferred.reject(errors);
+				}
+				else
+				{
+					deferred.resolve();
+				}
+			}).error(function(data, status, headers, config){
+				deferred.reject({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
+			});
+			return deferred.promise;
 		},
 		'get_all_contacts': function() {
 			var deferred = $q.defer();
@@ -647,8 +610,7 @@ buckbrowser.service('CompanyService', function($http, $q, ErrorService) {
 					var errors = ErrorService.handle(data.result);
 					if (errors.length>0)
 					{
-						console.log(errors);
-						deferred.reject();
+						deferred.reject(errors);
 					}
 					else
 					{
@@ -660,6 +622,9 @@ buckbrowser.service('CompanyService', function($http, $q, ErrorService) {
 				});
 			}
 			return deferred.promise;
+		},
+		'set_company': function(company) {
+			this.company = company;
 		},
 		'add_contact': function(contact) {
 			this.contacts.push(contact);
@@ -683,6 +648,89 @@ buckbrowser.service('CompanyService', function($http, $q, ErrorService) {
 					break;
 				}
 			}
+		}
+	}
+});
+buckbrowser.service('ContactService', function($http, $q, ErrorService) {
+	return {
+		'create': function(contact) {
+			var deferred = $q.defer();
+			var parameters = contact;
+			parameters.token = localStorage.buckbrowserToken;
+			$http.jsonrpc(api, 'Contact.create', parameters)
+			.success(function(data, status, headers, config){
+				var errors = ErrorService.handle(data.result);
+				if (errors.length > 0)
+				{
+					deferred.reject(errors);
+				}
+				else
+				{
+					deferred.resolve();
+				}
+			}).error(function(data, status, headers, config){
+				deferred.reject({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
+			});
+			return deferred.promise;
+		},
+		'read': function(id) {
+			var deferred = $q.defer();
+			$http.jsonrpc(api, 'Contact.read', {token: localStorage.buckbrowserToken, id: id})
+			.success(function(data, status, headers, config){
+				var errors = ErrorService.handle(data.result);
+				if (errors.length>0)
+				{
+					deferred.reject(errors);
+				}
+				else
+				{
+					deferred.resolve(data.result);
+				}
+			}).error(function(data, status, headers, config){
+				deferred.reject({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
+			});
+			return deferred.promise;
+		},
+		'update': function(contact) {
+			var deferred = $q.defer();
+			var parameters = contact;
+			parameters.token = localStorage.buckbrowserToken;
+			$http.jsonrpc(api, 'Contact.update', parameters)
+			.success(function(data, status, headers, config){
+				var errors = ErrorService.handle(data.result);
+				if (errors.length > 0)
+				{
+					deferred.reject(errors);
+				}
+				else
+				{
+					CompanyService.update_contact(this_contact);
+					CompanyService.get_all_contacts().then(function(contacts) {	$scope.contacts = contacts;	});
+					$scope.thisContact = {};
+					$scope.alerts.push({type: 'success', msg: this_contact.company+' updated successfully'});
+				}
+			}).error(function(data, status, headers, config){
+				deferred.reject({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
+			});
+			return deferred.promise;
+		},
+		'del': function(id) {
+			var deferred = $q.defer();
+			$http.jsonrpc(api, 'Contact.delete', {token: localStorage.buckbrowserToken, id: id})
+			.success(function(data, status, headers, config){
+				var errors = ErrorService.handle(data.result);
+				if (errors.length > 0)
+				{
+					deferred.reject(errors);
+				}
+				else
+				{
+					deferred.resolve();
+				}
+			}).error(function(data, status, headers, config){
+				deferred.reject({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
+			});
+			return deferred.promise;
 		}
 	}
 });
@@ -835,8 +883,7 @@ buckbrowser.service('UserService', function($http, ErrorService, $q) {
 					var errors = ErrorService.handle(data.result);
 					if (errors.length > 0)
 					{
-						console.log(errors);
-						deferred.reject();
+						deferred.reject(errors);
 					}
 					else
 					{
@@ -850,9 +897,64 @@ buckbrowser.service('UserService', function($http, ErrorService, $q) {
 			return deferred.promise;
 		},
 		'update': function(user) {
-			this.user = user;
+			var deferred = $q.defer();
+			var parameters = user;
+			parameters.token = localStorage.buckbrowserToken;
+			$http.jsonrpc(api, 'User.update', parameters)
+			.success(function(data, status, headers, config){
+				var errors = ErrorService.handle(data.result);
+				if (errors.length > 0)
+				{
+					deferred.reject(errors);
+				}
+				else
+				{
+					this.user = user;
+					deferred.resolve();
+				}
+			}).error(function(data, status, headers, config){
+				deferred.reject({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
+			});
+			return deferred.promise;
 		},
-		'getCompanies': function() {
+		'del': function() {
+			var deferred = $q.defer();
+			$http.jsonrpc(api, 'User.delete', {token: localStorage.buckbrowserToken})
+			.success(function(data, status, headers, config){
+				var errors = ErrorService.handle(data.result);
+				if (errors.length > 0)
+				{
+					deferred.reject(errors);
+				}
+				else
+				{
+					deferred.resolve();
+				}
+			}).error(function(data, status, headers, config){
+				deferred.reject({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
+			});
+			return deferred.promise;
+		},
+		'switch_to_company': function(company_id) {
+			var deferred = $q.defer();
+			$http.jsonrpc(api, 'User.switch_company', {token: localStorage.buckbrowserToken, company_id: company_id})
+			.success(function(data, status, headers, config){
+				var errors = ErrorService.handle(data.result);
+				if (errors.length > 0)
+				{
+					deferred.reject(errors);
+				}
+				else
+				{
+					localStorage.buckbrowserToken = data.result.token;
+					CompanyService.update();
+					deferred.resolve();
+				}
+			}).error(function(data, status, headers, config){
+				deferred.reject({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
+			});
+		},
+		'get_all_companies': function() {
 			var deferred = $q.defer();
 			if (this.companies)
 			{
@@ -877,6 +979,7 @@ buckbrowser.service('UserService', function($http, ErrorService, $q) {
 					deferred.reject({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
 				});
 			}
+			return deferred.promise;
 		}
 	}
 });

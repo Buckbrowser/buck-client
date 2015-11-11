@@ -1,31 +1,32 @@
-buckbrowser.controller('LoginCtrl', function($scope, $rootScope, $http, $modalInstance, $location, ErrorService, UserService) {
+buckbrowser.controller('LoginCtrl', function($scope, $rootScope, $http, $modalInstance, $location, ErrorService, UserService, CompanyService) {
+	$scope.alerts = [];
+
 	$scope.login = {};
-	$scope.invalidLoginCredentials = false;
 	$scope.authenticate = function() {
 		$http.jsonrpc(api, 'User.authenticate', $scope.login)
 		.success(function(data, status, headers, config){
-			if (data.result.error)
+			var errors = ErrorService.handle(data.result);
+			if (errors.length>0)
 			{
-				if (data.result.error == 36003)
-				{
-					$scope.invalidLoginCredentials = true;
-				}
-				else
-				{
-					console.log(data);
-					alert('Error: '+data.result.error);
-				}
+				$scope.alerts = errors;
 			}
 			else
 			{
+				if (data.result.company == -1)
+				{
+					CompanyService.set_company(null);
+				}
 				localStorage.buckbrowserToken = data.result.token;
 				$rootScope.loggedIn = true;
 				$modalInstance.close('Logged in');
 				$location.path('/account');
 			}
 		}).error(function(data, status, headers, config){
-			alert('Error');
-			console.log(data, status, headers, config);
+			$scope.alerts.push({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'})
 		});
+	};
+
+	$scope.closeAlert = function(index) {
+		$scope.alerts.splice(index, 1);
 	};
 });

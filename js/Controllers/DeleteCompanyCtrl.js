@@ -11,11 +11,11 @@ buckbrowser.controller('DeleteCompanyCtrl', function($scope, $http, $routeParams
 			}
 			else
 			{
-				CompanyService.update(null);
+				CompanyService.set_company(null);
 				$scope.alerts.push({type: 'success', msg: 'Your company has been deleted succesfully'});
 			}
 		}).error(function(data, status, headers, config){
-			alert('Error');
+			$scope.alerts.push({type: 'warning', msg: 'It appears you have no internet connection or our servers are offline.'});
 		});
 	};
 });

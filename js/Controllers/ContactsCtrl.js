@@ -1,4 +1,4 @@
-buckbrowser.controller('ContactsCtrl', function($scope, $rootScope, $http, CompanyService, CountryService, ErrorService) {
+buckbrowser.controller('ContactsCtrl', function($scope, $rootScope, $http, CompanyService, CountryService, ErrorService, ContactService) {
 	$scope.alerts = [];
 
 	$scope.contacts = [];
@@ -39,71 +39,44 @@ buckbrowser.controller('ContactsCtrl', function($scope, $rootScope, $http, Compa
 		}
 		if (!already_read)
 		{
-			$http.jsonrpc(api, 'Contact.read', {token: localStorage.buckbrowserToken, id: id})
-			.success(function(data, status, headers, config){
-				if (data.result.error)
-				{
-					console.log(data);
-					alert('Error, logged in console');
-				}
-				else
-				{
-					$scope.thisContact = data.result;
-					$scope.thisContact.id = id;
-					$scope.allContacts = false;
-					$scope.updateClick = true;
-				}
-			}).error(function(data, status, headers, config){
-				alert('Error');
+			ContactService.read(id).then(function(contact) {
+				$scope.thisContact = contact;
+				$scope.thisContact.id = id;
+				$scope.allContacts = false;
+				$scope.updateClick = true;
+			},function(errors) {
+				if (errors) $scope.alerts.push(errors);
 			});
 		}
 	};
 
 	$scope.updateContact = function() {
-		var this_contact = angular.copy($scope.thisContact);
-		var parameters = angular.copy(this_contact);
-		parameters.token = localStorage.buckbrowserToken;
-		$http.jsonrpc(api, 'Contact.update', parameters)
-		.success(function(data, status, headers, config){
-			var errors = ErrorService.handle(data.result);
-			if (errors.length > 0)
-			{
-				$scope.alerts = errors;
-			}
-			else
-			{
-				CompanyService.update_contact(this_contact);
-				CompanyService.get_all_contacts().then(function(contacts) {	$scope.contacts = contacts;	});
-				$scope.thisContact = {};
-				$scope.alerts.push({type: 'success', msg: this_contact.company+' updated successfully'});
-			}
-		}).error(function(data, status, headers, config){
-			alert('Error');
+		ContactService.update($scope.thisContact).then(function() {
+			var this_contact = angular.copy($scope.thisContact);
+			CompanyService.update_contact(this_contact);
+			CompanyService.get_all_contacts().then(function(contacts) {
+				$scope.contacts = contacts;
+			},function(errors) {
+				if (errors) $scope.alerts.push(errors);
+			});
+			$scope.thisContact = {};
+			$scope.alerts.push({type: 'success', msg: this_contact.company+' updated successfully'});
+		},function(errors) {
+			if (errors) $scope.alerts.push(errors);
 		});
 	};
 
 	$scope.createNewContact = function(form) {
-		var new_contact = angular.copy($scope.newContact);
-		var parameters = angular.copy(new_contact);
-		parameters.token = localStorage.buckbrowserToken;
-		$http.jsonrpc(api, 'Contact.create', parameters)
-		.success(function(data, status, headers, config){
-			var errors = ErrorService.handle(data.result);
-			if (errors.length > 0)
-			{
-				$scope.alerts = errors;
-			}
-			else
-			{
-				new_contact.id = data.result.id;
-				CompanyService.add_contact(new_contact);
-				$scope.contacts.push(new_contact);
-				$scope.newContact = {};
-				$scope.alerts.push({type: 'success', msg: 'Contact created successfully'});
-				form.$setPristine();
-			}
-		}).error(function(data, status, headers, config){
-			alert('Error');
+		ContactService.create($scope.newContact).then(function() {
+			var new_contact = angular.copy($scope.newContact);
+			new_contact.id = data.result.id;
+			CompanyService.add_contact(new_contact);
+			$scope.contacts.push(new_contact);
+			$scope.newContact = {};
+			$scope.alerts.push({type: 'success', msg: 'Contact created successfully'});
+			form.$setPristine();
+		},function(errors) {
+			if (errors) $scope.alerts.push(errors);
 		});
 	};
 
@@ -111,21 +84,16 @@ buckbrowser.controller('ContactsCtrl', function($scope, $rootScope, $http, Compa
 		var check = confirm("Are you sure you want to delete this contact?");
 		if (check)
 		{
-			$http.jsonrpc(api, 'Contact.delete', {token: localStorage.buckbrowserToken, id: contact})
-			.success(function(data, status, headers, config){
-				var errors = ErrorService.handle(data.result);
-				if (errors.length > 0)
-				{
-					$scope.alerts = errors;
-				}
-				else
-				{
-					CompanyService.delete_contact(contact);
-					CompanyService.get_all_contacts().then(function(contacts) {	$scope.contacts = contacts;	});
-					$scope.alerts.push({type: 'success', msg: 'Contact deleted succesfully'});
-				}
-			}).error(function(data, status, headers, config){
-				alert('Error');
+			ContactService.del(contact).then(function() {
+				CompanyService.delete_contact(contact);
+				CompanyService.get_all_contacts().then(function(contacts) {
+					$scope.contacts = contacts;
+				},function(errors) {
+					if (errors) $scope.alert.push(errors);
+				});
+				$scope.alerts.push({type: 'success', msg: 'Contact deleted succesfully'});
+			},function(errors) {
+				if (errors) $scope.alerts.push(errors);
 			});
 		}
 	};

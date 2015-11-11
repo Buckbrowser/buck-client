@@ -85,9 +85,10 @@ buckbrowser.run(function($rootScope, $http, $location, CompanyService) {
 			}
 			if (next.access.requiresCompany)
 			{
-				CompanyService.get().then(function(company)
-				{ /* company found, do nothing */},function(company)
-				{ $location.path("/home"); });
+				CompanyService.get().then(function() {
+				},function() {
+					$location.path("/home");
+				});
 			}
 		}
 	});
