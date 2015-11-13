@@ -1,6 +1,5 @@
 var buckbrowser = angular.module('main', ['ui.bootstrap', 'ngRoute', 'angular-json-rpc', 'validation.match', 'mm.iban']);
 
-//var api = 'http://buckbrowser/server/buckbrowser.php'; // Rien home
 //var api = 'http://buckbrowser.local/buckbrowser.php'; // Wybren virtual host
 var api = 'http://buckserver.langstra.nl/buckbrowser.php'; // Wybren RasPi2
 
@@ -114,6 +113,7 @@ buckbrowser.directive('overwriteEmail', function() {
     }
   };
 });
+
 
 
 buckbrowser.controller('AccountCtrl', function($scope, $http, ErrorService, UserService, CountryService, CompanyService) {
