@@ -10,5 +10,10 @@
     "grunt-contrib-cssmin": "^0.14.0",
     "grunt-contrib-less": "^1.0.1",
     "grunt-contrib-watch": "^0.6.1"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Buckbrowser/buck-client.git"
   }
 }
